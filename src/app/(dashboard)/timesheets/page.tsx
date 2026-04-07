@@ -11,7 +11,7 @@ type Timesheet = {
   matter_id: string; created_by: string; payment_date: string|null; payment_method: string|null; payment_amount: number|null
   matters?: { title: string; clients?: { name: string } }; users?: { full_name: string }
 }
-type Matter = { id: string; title: string; custom_rate: number|null; clients?: { name: string } }
+type Matter = { id: string; title: string; custom_rate: number|null; clients?: any }
 type TimeEntry = {
   id: string; entry_date: string; hours_logged: number; description: string; is_billable: boolean; user_id: string
   users?: { full_name: string; hourly_rate: number }

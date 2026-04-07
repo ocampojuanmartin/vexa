@@ -10,7 +10,7 @@ type Expense = {
   is_reimbursable: boolean; is_locked: boolean; matter_id: string; user_id: string; receipt_url: string|null
   matters?: { title: string; clients?: { name: string } }; users?: { full_name: string }
 }
-type Matter = { id: string; title: string; clients?: { name: string } }
+type Matter = { id: string; title: string; clients?: any }
 type Form = { expense_date: string; matter_id: string; category: string; amount: string; currency: string; is_reimbursable: boolean }
 
 const CATEGORIES = ['tasa_judicial','peritaje','viaticos','honorarios_perito','copias','notarial','mediacion','inscripcion','otros']
