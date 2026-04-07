@@ -10,7 +10,7 @@ type TimeEntry = {
   is_billable: boolean; is_locked: boolean; matter_id: string; user_id: string
   matters?: { title: string; clients?: { name: string } }; users?: { full_name: string }
 }
-type Matter = { id: string; title: string; clients?: { name: string } }
+type Matter = { id: string; title: string; clients?: any }
 type Form = { entry_date: string; matter_id: string; description: string; hours: string; is_billable: boolean }
 
 const emptyForm = (): Form => ({
@@ -53,7 +53,7 @@ export default function TimePage() {
     if (data) setEntries(data as TimeEntry[])
 
     const { data: m } = await sb.from('matters').select('id, title, clients(name)').eq('status', 'active').order('title')
-    if (m) setMatters(m as Matter[])
+    if (m) setMatters(m as any)
     setLoading(false)
   }, [])
 

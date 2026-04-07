@@ -56,7 +56,7 @@ export default function TimesheetsPage() {
     const { data: ts } = await sb.from('timesheets').select('*, matters(title, clients(name)), users!timesheets_created_by_fkey(full_name)').order('created_at', { ascending: false })
     if (ts) setTimesheets(ts as Timesheet[])
     const { data: m } = await sb.from('matters').select('id, title, custom_rate, clients(name)').order('title')
-    if (m) setMatters(m as Matter[])
+    if (m) setMatters(m as any)
     setLoading(false)
   }, [])
 

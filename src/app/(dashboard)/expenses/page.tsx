@@ -49,7 +49,7 @@ export default function ExpensesPage() {
     const { data } = await q
     if (data) setEntries(data as Expense[])
     const { data: m } = await sb.from('matters').select('id, title, clients(name)').eq('status', 'active').order('title')
-    if (m) setMatters(m as Matter[])
+    if (m) setMatters(m as any)
     setLoading(false)
   }, [])
 
