@@ -11,6 +11,8 @@ type UserStat = {
 }
 type OriginStat = { full_name: string; client_name: string; matter_title: string; revenue: number; percentage: number }
 
+function hrsToHM(h:number){const hrs=Math.floor(h);const mins=Math.round((h-hrs)*60);return `${hrs}h ${String(mins).padStart(2,'0')}m`}
+
 export default function StatsPage() {
   const { locale } = useI18n()
   const es = locale === 'es'
@@ -117,11 +119,11 @@ export default function StatsPage() {
           <div className="mt-6 grid grid-cols-2 gap-4 max-w-md">
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <p className="text-xs text-gray-500">{es ? 'Horas logueadas' : 'Hours logged'}</p>
-              <p className="text-2xl font-semibold mt-1">{myStat.hours_logged.toFixed(1)}</p>
+              <p className="text-2xl font-semibold mt-1">{hrsToHM(myStat.hours_logged)}</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <p className="text-xs text-gray-500">{es ? 'Horas facturadas' : 'Hours billed'}</p>
-              <p className="text-2xl font-semibold mt-1">{myStat.hours_billed.toFixed(1)}</p>
+              <p className="text-2xl font-semibold mt-1">{hrsToHM(myStat.hours_billed)}</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <p className="text-xs text-gray-500">{es ? 'Ratio facturable' : 'Billable ratio'}</p>
@@ -129,7 +131,7 @@ export default function StatsPage() {
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <p className="text-xs text-gray-500">{es ? 'Gap log/fact' : 'Log/bill gap'}</p>
-              <p className="text-2xl font-semibold mt-1">{(myStat.hours_logged - myStat.hours_billed).toFixed(1)}h</p>
+              <p className="text-2xl font-semibold mt-1">{hrsToHM(myStat.hours_logged - myStat.hours_billed)}</p>
             </div>
           </div>
         )}
@@ -178,12 +180,12 @@ export default function StatsPage() {
       <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500">{L.totalLogged}</p>
-          <p className="text-2xl font-semibold mt-1">{totalLogged.toFixed(1)}h</p>
+          <p className="text-2xl font-semibold mt-1">{hrsToHM(totalLogged)}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500">{L.totalBilled}</p>
-          <p className="text-2xl font-semibold mt-1">{totalBilled.toFixed(1)}h</p>
-          <p className="text-xs text-gray-400 mt-1">{es?'Gap':'Gap'}: {(totalLogged - totalBilled).toFixed(1)}h</p>
+          <p className="text-2xl font-semibold mt-1">{hrsToHM(totalBilled)}</p>
+          <p className="text-xs text-gray-400 mt-1">{es?'Gap':'Gap'}: {hrsToHM(totalLogged - totalBilled)}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500">{L.totalRevenue}</p>
@@ -226,10 +228,10 @@ export default function StatsPage() {
                         <span className="font-medium text-gray-900">{u.full_name}</span>
                         <span className="ml-2 text-xs text-gray-400 capitalize">{u.role}</span>
                       </td>
-                      <td className="px-4 py-3 text-right text-gray-600">{u.hours_logged.toFixed(1)}</td>
-                      <td className="px-4 py-3 text-right text-gray-900 font-medium">{u.hours_billed.toFixed(1)}</td>
+                      <td className="px-4 py-3 text-right text-gray-600">{hrsToHM(u.hours_logged)}</td>
+                      <td className="px-4 py-3 text-right text-gray-900 font-medium">{hrsToHM(u.hours_billed)}</td>
                       <td className="px-4 py-3 text-right">
-                        <span className={gap > 0 ? 'text-amber-600' : 'text-gray-400'}>{gap.toFixed(1)}</span>
+                        <span className={gap > 0 ? 'text-amber-600' : 'text-gray-400'}>{hrsToHM(gap)}</span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${ratio >= 80 ? 'bg-green-50 text-green-700' : ratio >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>{ratio}%</span>

@@ -51,7 +51,7 @@ export default function DashboardPage() {
   }, [])
 
   const stats = [
-    { label: t('dashboard.hoursThisMonth'), value: hours.toFixed(1), icon: Clock, color: 'text-blue-600 bg-blue-50' },
+    { label: t('dashboard.hoursThisMonth'), value: `${Math.floor(hours)}h ${String(Math.round((hours-Math.floor(hours))*60)).padStart(2,'0')}m`, icon: Clock, color: 'text-blue-600 bg-blue-50' },
     { label: t('dashboard.activeMatters'), value: activeMatters.toString(), icon: Briefcase, color: 'text-purple-600 bg-purple-50' },
     { label: t('dashboard.pendingTimesheets'), value: pendingTs.toString(), icon: FileText, color: 'text-amber-600 bg-amber-50' },
     { label: t('dashboard.overduePayments'), value: overdue.toString(), icon: AlertCircle, color: 'text-red-600 bg-red-50' },
