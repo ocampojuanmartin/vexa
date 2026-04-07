@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Clock, FileText, BarChart3, Users, Shield, Globe, ChevronRight, Check, Menu, X } from 'lucide-react'
 
+
 export default function LandingPage() {
-  const [lang, setLang] = useState<'es'|'en'>(() => {
-    if (typeof window !== 'undefined' && navigator.language.startsWith('es')) return 'es'
-    return 'en'
-  })
+  const [lang, setLang] = useState<'es'|'en'>('en')
+useEffect(() => {
+  if (navigator.language.startsWith('es')) setLang('es')
+}, [])
   const [menuOpen, setMenuOpen] = useState(false)
   const [formSent, setFormSent] = useState(false)
   const es = lang === 'es'
