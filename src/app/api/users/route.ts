@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   if (!profile || profile.role !== 'admin') return NextResponse.json({ error: 'Not admin' }, { status: 403 })
 
   const body = await request.json()
-  const { email, password, full_name, role, hourly_rate, expected_monthly_hours, module_permissions } = body
+  const { email, password, full_name, role, hourly_rate, expected_monthly_hours, module_permissions, category_id } = body
 
   // Use service role to create user without affecting current session
   const adminSb = createClient(
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     email, full_name, role, hourly_rate: hourly_rate || 0,
     expected_monthly_hours: expected_monthly_hours || 160,
     module_permissions: module_permissions || {},
+    category_id: category_id || null,
   })
   if (dbErr) {
     return NextResponse.json({ error: dbErr.message }, { status: 400 })

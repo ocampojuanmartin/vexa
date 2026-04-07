@@ -3,22 +3,19 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/i18n/context'
-import { Plus, Search, X, Receipt, Pencil, Lock } from 'lucide-react'
+import { Plus, Search, X, Receipt, Pencil, Lock, Paperclip, ExternalLink } from 'lucide-react'
 
 type Expense = {
   id: string; expense_date: string; category: string; amount: number; currency: string
   is_reimbursable: boolean; is_locked: boolean; matter_id: string; user_id: string; receipt_url: string|null
-  matters?: { title: string; clients?: { name: string } }; users?: { full_name: string }
+  matters?: any; users?: any
 }
 type Matter = { id: string; title: string; clients?: any }
 type Form = { expense_date: string; matter_id: string; category: string; amount: string; currency: string; is_reimbursable: boolean }
 
 const CATEGORIES = ['tasa_judicial','peritaje','viaticos','honorarios_perito','copias','notarial','mediacion','inscripcion','otros']
 const CURRENCIES = ['ARS','USD','EUR','BRL']
-
-const emptyForm = (): Form => ({
-  expense_date: new Date().toISOString().slice(0,10), matter_id: '', category: 'otros', amount: '', currency: 'ARS', is_reimbursable: false
-})
+const emptyForm = (): Form => ({ expense_date: new Date().toISOString().slice(0,10), matter_id:'', category:'otros', amount:'', currency:'ARS', is_reimbursable:false })
 
 export default function ExpensesPage() {
   const { locale } = useI18n()
@@ -28,8 +25,10 @@ export default function ExpensesPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [editing, setEditing] = useState<Expense | null>(null)
+  const [editing, setEditing] = useState<Expense|null>(null)
   const [form, setForm] = useState<Form>(emptyForm())
+  const [file, setFile] = useState<File|null>(null)
+  const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [userId, setUserId] = useState('')
@@ -47,7 +46,7 @@ export default function ExpensesPage() {
     let q = sb.from('expenses').select('*, matters(title, clients(name)), users!expenses_user_id_fkey(full_name)').order('expense_date', { ascending: false }).limit(200)
     if (!isAdmin) q = q.eq('user_id', user.id)
     const { data } = await q
-    if (data) setEntries(data as Expense[])
+    if (data) setEntries(data as any)
     const { data: m } = await sb.from('matters').select('id, title, clients(name)').eq('status', 'active').order('title')
     if (m) setMatters(m as any)
     setLoading(false)
@@ -55,198 +54,157 @@ export default function ExpensesPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
-  function openCreate() { setEditing(null); setForm(emptyForm()); setError(''); setShowModal(true) }
+  function openCreate() { setEditing(null); setForm(emptyForm()); setFile(null); setError(''); setShowModal(true) }
   function openEdit(e: Expense) {
     if (e.is_locked) return
-    setEditing(e)
-    setForm({ expense_date: e.expense_date, matter_id: e.matter_id, category: e.category, amount: e.amount.toString(), currency: e.currency, is_reimbursable: e.is_reimbursable })
+    setEditing(e); setFile(null)
+    setForm({ expense_date:e.expense_date, matter_id:e.matter_id, category:e.category, amount:e.amount.toString(), currency:e.currency, is_reimbursable:e.is_reimbursable })
     setError(''); setShowModal(true)
   }
 
   async function handleSave() {
-    if (!form.matter_id || !form.amount) {
-      setError(es ? 'Asunto y monto son obligatorios' : 'Matter and amount are required'); return
-    }
+    if (!form.matter_id || !form.amount) { setError(es?'Asunto y monto obligatorios':'Matter and amount required'); return }
     const amt = parseFloat(form.amount)
-    if (isNaN(amt) || amt <= 0) { setError(es ? 'Monto inválido' : 'Invalid amount'); return }
+    if (isNaN(amt) || amt <= 0) { setError(es?'Monto inválido':'Invalid amount'); return }
     setSaving(true); setError('')
     const sb = createClient()
-    // Check period lock
     const expDate = new Date(form.expense_date)
-    const { data: lock } = await sb.from('period_locks')
-      .select('id').eq('year', expDate.getFullYear()).eq('month', expDate.getMonth() + 1).maybeSingle()
-    if (lock && !editing) {
-      setError(es ? 'Este período está bloqueado.' : 'This period is locked.')
-      setSaving(false); return
+    const { data: lock } = await sb.from('period_locks').select('id').eq('year', expDate.getFullYear()).eq('month', expDate.getMonth()+1).maybeSingle()
+    if (lock && !editing) { setError(es?'Período bloqueado':'Period locked'); setSaving(false); return }
+
+    let receiptUrl: string|null = editing?.receipt_url || null
+    if (file) {
+      setUploading(true)
+      const ext = file.name.split('.').pop()
+      const path = `${firmId}/${Date.now()}.${ext}`
+      const { error: upErr } = await sb.storage.from('receipts').upload(path, file)
+      if (upErr) { setError(upErr.message); setSaving(false); setUploading(false); return }
+      const { data: urlData } = sb.storage.from('receipts').getPublicUrl(path)
+      receiptUrl = urlData.publicUrl
+      setUploading(false)
     }
-    const payload = {
-      expense_date: form.expense_date, matter_id: form.matter_id, category: form.category,
-      amount: amt, currency: form.currency, is_reimbursable: form.is_reimbursable,
-      user_id: userId, firm_id: firmId,
-    }
-    if (editing) {
-      const { error: err } = await sb.from('expenses').update(payload).eq('id', editing.id)
-      if (err) { setError(err.message); setSaving(false); return }
-    } else {
-      const { error: err } = await sb.from('expenses').insert(payload)
-      if (err) { setError(err.message); setSaving(false); return }
-    }
+
+    const payload = { expense_date:form.expense_date, matter_id:form.matter_id, category:form.category, amount:amt, currency:form.currency, is_reimbursable:form.is_reimbursable, receipt_url:receiptUrl, user_id:userId, firm_id:firmId }
+    if (editing) { await sb.from('expenses').update(payload).eq('id', editing.id) }
+    else { await sb.from('expenses').insert(payload) }
     setSaving(false); setShowModal(false); loadData()
   }
 
   const catLabel = (c: string) => {
     const map: Record<string,string> = es
-      ? { tasa_judicial:'Tasa judicial', peritaje:'Peritaje', viaticos:'Viáticos', honorarios_perito:'Honorarios perito', copias:'Copias', notarial:'Notarial', mediacion:'Mediación', inscripcion:'Inscripción', otros:'Otros' }
-      : { tasa_judicial:'Court fee', peritaje:'Expert report', viaticos:'Travel', honorarios_perito:'Expert fees', copias:'Copies', notarial:'Notarial', mediacion:'Mediation', inscripcion:'Registration', otros:'Other' }
-    return map[c] || c
+      ? { tasa_judicial:'Tasa judicial',peritaje:'Peritaje',viaticos:'Viáticos',honorarios_perito:'Hon. perito',copias:'Copias',notarial:'Notarial',mediacion:'Mediación',inscripcion:'Inscripción',otros:'Otros' }
+      : { tasa_judicial:'Court fee',peritaje:'Expert report',viaticos:'Travel',honorarios_perito:'Expert fees',copias:'Copies',notarial:'Notarial',mediacion:'Mediation',inscripcion:'Registration',otros:'Other' }
+    return map[c]||c
   }
 
-  const filtered = entries.filter(e =>
-    e.category.toLowerCase().includes(search.toLowerCase()) ||
-    e.matters?.title?.toLowerCase().includes(search.toLowerCase()) ||
-    e.matters?.clients?.name?.toLowerCase().includes(search.toLowerCase())
-  )
-  const total = filtered.reduce((s, e) => s + e.amount, 0)
+  const filtered = entries.filter(e => e.category.toLowerCase().includes(search.toLowerCase()) || e.matters?.title?.toLowerCase().includes(search.toLowerCase()) || e.matters?.clients?.name?.toLowerCase().includes(search.toLowerCase()))
+  const total = filtered.reduce((s,e) => s + e.amount, 0)
   const canSeeAll = userRole === 'admin' || userRole === 'partner'
 
   const L = {
-    title: es ? 'Gastos' : 'Expenses', new: es ? 'Nuevo gasto' : 'New expense',
-    edit: es ? 'Editar gasto' : 'Edit expense', date: es ? 'Fecha' : 'Date',
-    matter: es ? 'Asunto' : 'Matter', cat: es ? 'Categoría' : 'Category',
-    amount: es ? 'Monto' : 'Amount', curr: es ? 'Moneda' : 'Currency',
-    reimb: es ? 'Reembolsable' : 'Reimbursable',
-    save: es ? 'Guardar' : 'Save', cancel: es ? 'Cancelar' : 'Cancel',
-    search: es ? 'Buscar...' : 'Search...',
-    none: es ? 'No hay gastos cargados' : 'No expenses yet',
-    addFirst: es ? 'Cargá tu primer gasto' : 'Add your first expense',
-    select: es ? 'Seleccionar asunto' : 'Select matter',
-    total: es ? 'Total' : 'Total', lawyer: es ? 'Abogado' : 'Lawyer',
+    title: es?'Gastos':'Expenses', new: es?'Nuevo gasto':'New expense', edit: es?'Editar gasto':'Edit expense',
+    date: es?'Fecha':'Date', matter: es?'Asunto':'Matter', cat: es?'Categoría':'Category',
+    amount: es?'Monto':'Amount', curr: es?'Moneda':'Currency', reimb: es?'Reembolsable':'Reimbursable',
+    receipt: es?'Comprobante':'Receipt', attach: es?'Adjuntar archivo':'Attach file',
+    save: es?'Guardar':'Save', cancel: es?'Cancelar':'Cancel', search: es?'Buscar...':'Search...',
+    none: es?'No hay gastos':'No expenses yet', select: es?'Seleccionar':'Select',
+    total: es?'Total':'Total', lawyer: es?'Abogado':'Lawyer', view: es?'Ver':'View',
   }
 
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors">
-          <Plus size={16} />{L.new}
-        </button>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700"><Plus size={16}/>{L.new}</button>
       </div>
-
       {entries.length > 0 && (
         <div className="mt-4 relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={L.search}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm" />
+          <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm" />
         </div>
       )}
-
-      {loading ? (
-        <div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
-      ) : entries.length === 0 ? (
-        <div className="mt-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <Receipt size={28} className="text-gray-400" />
-          </div>
-          <p className="text-gray-900 font-medium">{L.none}</p>
-          <p className="text-sm text-gray-500 mt-1">{L.addFirst}</p>
-        </div>
+      {loading ? <div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
+      : entries.length === 0 ? (
+        <div className="mt-12 text-center"><Receipt size={28} className="text-gray-400 mx-auto mb-3"/><p className="text-gray-900 font-medium">{L.none}</p></div>
       ) : (
         <>
           <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{L.date}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
-                  {canSeeAll && <th className="text-left px-4 py-3 font-medium text-gray-600">{L.lawyer}</th>}
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{L.cat}</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">{L.amount}</th>
-                  <th className="w-16"></th>
-                </tr>
-              </thead>
+              <thead><tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-left px-4 py-3 font-medium text-gray-600">{L.date}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
+                {canSeeAll && <th className="text-left px-4 py-3 font-medium text-gray-600">{L.lawyer}</th>}
+                <th className="text-left px-4 py-3 font-medium text-gray-600">{L.cat}</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600">{L.amount}</th>
+                <th className="w-20"></th>
+              </tr></thead>
               <tbody>
                 {filtered.map(e => (
                   <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{e.expense_date}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{e.matters?.title}</div>
-                      <div className="text-xs text-gray-400">{e.matters?.clients?.name}</div>
-                    </td>
+                    <td className="px-4 py-3"><div className="font-medium text-gray-900">{e.matters?.title}</div><div className="text-xs text-gray-400">{e.matters?.clients?.name}</div></td>
                     {canSeeAll && <td className="px-4 py-3 text-gray-600">{e.users?.full_name}</td>}
                     <td className="px-4 py-3 text-gray-600">{catLabel(e.category)}{e.is_reimbursable && <span className="ml-1 text-xs text-green-600">(R)</span>}</td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-900">{e.currency} {e.amount.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                    <td className="px-4 py-3">
-                      {e.is_locked ? <Lock size={14} className="text-gray-300 mx-auto" /> : (
-                        <button onClick={() => openEdit(e)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"><Pencil size={15} /></button>
-                      )}
+                    <td className="px-4 py-3 text-right font-medium text-gray-900">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+                    <td className="px-4 py-3 flex gap-1 justify-end">
+                      {e.receipt_url && <a href={e.receipt_url} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-gray-100 text-gray-400"><ExternalLink size={14}/></a>}
+                      {e.is_locked ? <Lock size={14} className="text-gray-300"/> : <button onClick={()=>openEdit(e)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Pencil size={14}/></button>}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="mt-3 text-right text-sm text-gray-500">
-            {L.total}: <span className="font-semibold text-gray-900">{total.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
-          </div>
+          <div className="mt-3 text-right text-sm text-gray-500">{L.total}: <span className="font-semibold text-gray-900">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </>
       )}
-
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">{editing ? L.edit : L.new}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-md"><X size={18} className="text-gray-400" /></button>
+              <h2 className="text-lg font-semibold">{editing?L.edit:L.new}</h2>
+              <button onClick={()=>setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-md"><X size={18} className="text-gray-400"/></button>
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{L.date}</label>
-                  <input type="date" value={form.expense_date} onChange={e => setForm({...form, expense_date: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{L.cat}</label>
-                  <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                    {CATEGORIES.map(c => <option key={c} value={c}>{catLabel(c)}</option>)}
-                  </select>
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.date}</label>
+                  <input type="date" value={form.expense_date} onChange={e=>setForm({...form,expense_date:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.cat}</label>
+                  <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                    {CATEGORIES.map(c=><option key={c} value={c}>{catLabel(c)}</option>)}</select></div>
+              </div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label>
+                <select value={form.matter_id} onChange={e=>setForm({...form,matter_id:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <option value="">{L.select}</option>
+                  {matters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.amount} *</label>
+                  <input type="number" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00"/></div>
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.curr}</label>
+                  <select value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                    {CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+                <div className="flex items-end pb-1">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={form.is_reimbursable} onChange={e=>setForm({...form,is_reimbursable:e.target.checked})} className="rounded border-gray-300"/>
+                    <span className="text-sm text-gray-700">{L.reimb}</span></label>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label>
-                <select value={form.matter_id} onChange={e => setForm({...form, matter_id: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <option value="">{L.select}</option>
-                  {matters.map(m => <option key={m.id} value={m.id}>{m.title} — {m.clients?.name}</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{L.amount} *</label>
-                  <input type="number" step="0.01" min="0.01" value={form.amount}
-                    onChange={e => setForm({...form, amount: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{L.curr}</label>
-                  <select value={form.currency} onChange={e => setForm({...form, currency: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                    {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{L.receipt}</label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+                    <Paperclip size={14}/>
+                    <span>{file ? file.name : L.attach}</span>
+                    <input type="file" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={e=>setFile(e.target.files?.[0]||null)}/>
+                  </label>
+                  {(editing?.receipt_url && !file) && <a href={editing.receipt_url} target="_blank" rel="noreferrer" className="text-xs text-vexa-600 hover:text-vexa-700">{L.view}</a>}
                 </div>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_reimbursable}
-                  onChange={e => setForm({...form, is_reimbursable: e.target.checked})} className="rounded border-gray-300" />
-                <span className="text-sm text-gray-700">{L.reimb}</span>
-              </label>
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving}
-                className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving ? '...' : L.save}</button>
+              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
+              <button onClick={handleSave} disabled={saving||uploading} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving||uploading?'...':L.save}</button>
             </div>
           </div>
         </div>

@@ -28,7 +28,6 @@ type UserProfile = {
 const navItems = [
   { key: 'nav.dashboard', href: '/', icon: LayoutDashboard, module: null },
   { key: 'nav.clients', href: '/clients', icon: Users, module: 'clients' },
-  { key: 'nav.matters', href: '/matters', icon: Briefcase, module: 'matters' },
   { key: 'nav.timeTracking', href: '/time', icon: Clock, module: 'time' },
   { key: 'nav.expenses', href: '/expenses', icon: Receipt, module: 'expenses' },
   { key: 'nav.timesheets', href: '/timesheets', icon: FileText, module: 'timesheets' },

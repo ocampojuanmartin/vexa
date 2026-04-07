@@ -11,7 +11,7 @@ type Timesheet = {
   matter_id: string; created_by: string; payment_date: string|null; payment_method: string|null; payment_amount: number|null
   matters?: { title: string; clients?: { name: string } }; users?: { full_name: string }
 }
-type Matter = { id: string; title: string; custom_rate: number|null; clients?: any }
+type Matter = { id: string; title: string; custom_rate: number|null; clients?: { name: string } }
 type TimeEntry = {
   id: string; entry_date: string; hours_logged: number; description: string; is_billable: boolean; user_id: string
   users?: { full_name: string; hourly_rate: number }
@@ -45,6 +45,7 @@ export default function TimesheetsPage() {
   const [payDate, setPayDate] = useState('')
   const [payMethod, setPayMethod] = useState('')
   const [payAmount, setPayAmount] = useState('')
+  const [payCurrency, setPayCurrency] = useState('ARS')
 
   const loadData = useCallback(async () => {
     const sb = createClient()
@@ -56,7 +57,7 @@ export default function TimesheetsPage() {
     const { data: ts } = await sb.from('timesheets').select('*, matters(title, clients(name)), users!timesheets_created_by_fkey(full_name)').order('created_at', { ascending: false })
     if (ts) setTimesheets(ts as Timesheet[])
     const { data: m } = await sb.from('matters').select('id, title, custom_rate, clients(name)').order('title')
-    if (m) setMatters(m as any)
+    if (m) setMatters(m as Matter[])
     setLoading(false)
   }, [])
 
@@ -151,6 +152,7 @@ export default function TimesheetsPage() {
       update.payment_date = payDate || new Date().toISOString().slice(0,10)
       update.payment_method = payMethod || null
       update.payment_amount = payAmount ? parseFloat(payAmount) : ts.total_billed_amount + ts.total_expenses
+      update.payment_currency = payCurrency
     }
     await sb.from('timesheets').update(update).eq('id', ts.id)
     setStatusSaving(false); setDetail(null); loadData()
@@ -170,7 +172,7 @@ export default function TimesheetsPage() {
     return c[s] || 'bg-gray-100 text-gray-600'
   }
   const nextStatus = (s: string): string|null => {
-    const flow: Record<string,string> = { draft:'sent', sent:'approved', approved:'invoice_issued', invoice_issued:'paid' }
+    const flow: Record<string,string> = { draft:'sent', sent:'approved', approved:'invoice_issued', invoice_issued:'paid', unpaid:'paid' }
     return flow[s] || null
   }
 
@@ -351,11 +353,15 @@ export default function TimesheetsPage() {
           {next && (
             <div className="border-t pt-4 border-gray-100 space-y-3">
               {next === 'paid' && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   <input type="date" value={payDate} onChange={e=>setPayDate(e.target.value)}
                     className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
                   <input type="text" value={payMethod} onChange={e=>setPayMethod(e.target.value)} placeholder={L.payMethod}
                     className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
+                  <select value={payCurrency} onChange={e=>setPayCurrency(e.target.value)}
+                    className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white">
+                    <option value="ARS">ARS</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option>
+                  </select>
                   <input type="number" value={payAmount} onChange={e=>setPayAmount(e.target.value)} placeholder={L.payAmt}
                     className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
                 </div>

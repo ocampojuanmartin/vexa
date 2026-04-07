@@ -22,7 +22,7 @@ export const locales: Record<Locale, Record<string, string>> = {
 
     // Sidebar
     'nav.dashboard': 'Dashboard',
-    'nav.clients': 'Clients',
+    'nav.clients': 'Clients & Matters',
     'nav.matters': 'Matters',
     'nav.timeTracking': 'Time tracking',
     'nav.expenses': 'Expenses',
@@ -71,7 +71,7 @@ export const locales: Record<Locale, Record<string, string>> = {
 
     // Sidebar
     'nav.dashboard': 'Panel',
-    'nav.clients': 'Clientes',
+    'nav.clients': 'Clientes & Asuntos',
     'nav.matters': 'Asuntos',
     'nav.timeTracking': 'Horas',
     'nav.expenses': 'Gastos',
