@@ -6,11 +6,13 @@ import { useI18n } from '@/i18n/context'
 import { Plus, X, Pencil, GripVertical } from 'lucide-react'
 
 type Category = { id: string; name: string; default_rate: number; sort_order: number }
+type DemoRequest = { id: string; full_name: string; email: string; firm_name: string; firm_size: string; created_at: string }
 
 export default function SettingsPage() {
   const { locale } = useI18n()
   const es = locale === 'es'
   const [categories, setCategories] = useState<Category[]>([])
+  const [demoRequests, setDemoRequests] = useState<DemoRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [firmId, setFirmId] = useState('')
@@ -30,6 +32,8 @@ export default function SettingsPage() {
     setFirmId(p.firm_id); setIsAdmin(p.role === 'admin')
     const { data } = await sb.from('lawyer_categories').select('*').order('sort_order')
     if (data) setCategories(data)
+    const { data: dr } = await sb.from('demo_requests').select('*').order('created_at', { ascending: false })
+    if (dr) setDemoRequests(dr)
     setLoading(false)
   }, [])
 
@@ -114,6 +118,37 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* DEMO REQUESTS */}
+      {demoRequests.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{es ? 'Solicitudes de demo' : 'Demo requests'}</h2>
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Nombre' : 'Name'}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Estudio' : 'Firm'}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Tamaño' : 'Size'}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Fecha' : 'Date'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {demoRequests.map(d => (
+                  <tr key={d.id} className="border-b border-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-900">{d.full_name}</td>
+                    <td className="px-4 py-3 text-gray-600">{d.email}</td>
+                    <td className="px-4 py-3 text-gray-600">{d.firm_name}</td>
+                    <td className="px-4 py-3 text-gray-600">{d.firm_size}</td>
+                    <td className="px-4 py-3 text-gray-400 text-xs">{new Date(d.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">

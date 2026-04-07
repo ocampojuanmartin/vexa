@@ -2,16 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { Clock, FileText, BarChart3, Users, Shield, Globe, ChevronRight, Check, Menu, X } from 'lucide-react'
-
 
 export default function LandingPage() {
   const [lang, setLang] = useState<'es'|'en'>('en')
-useEffect(() => {
-  if (navigator.language.startsWith('es')) setLang('es')
-}, [])
   const [menuOpen, setMenuOpen] = useState(false)
   const [formSent, setFormSent] = useState(false)
+  const [formName, setFormName] = useState('')
+  const [formEmail, setFormEmail] = useState('')
+  const [formFirm, setFormFirm] = useState('')
+  const [formSize, setFormSize] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (navigator.language.startsWith('es')) setLang('es')
+  }, [])
   const es = lang === 'es'
 
   const L = {
@@ -157,22 +163,22 @@ useEffect(() => {
               <p className="text-gray-900 font-medium">{L.cta.sent}</p>
             </div>
           ) : (
-            <form onSubmit={e => { e.preventDefault(); setFormSent(true) }} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+            <form onSubmit={async e => { e.preventDefault(); setSubmitting(true); const sb = createClient(); await sb.from('demo_requests').insert({ full_name: formName, email: formEmail, firm_name: formFirm, firm_size: formSize }); setSubmitting(false); setFormSent(true) }} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{L.cta.name}</label>
-                <input type="text" required className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
+                <input type="text" required value={formName} onChange={e=>setFormName(e.target.value)} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{L.cta.email}</label>
-                <input type="email" required className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
+                <input type="email" required value={formEmail} onChange={e=>setFormEmail(e.target.value)} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{L.cta.firm}</label>
-                <input type="text" required className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
+                <input type="text" required value={formFirm} onChange={e=>setFormFirm(e.target.value)} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{L.cta.size}</label>
-                <select required className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white">
+                <select required value={formSize} onChange={e=>setFormSize(e.target.value)} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white">
                   <option value="">—</option>
                   <option value="5-10">5-10</option>
                   <option value="10-25">10-25</option>
@@ -181,7 +187,7 @@ useEffect(() => {
                   <option value="100+">100+</option>
                 </select>
               </div>
-              <button type="submit" className="w-full py-3 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors">{L.cta.send}</button>
+              <button type="submit" disabled={submitting} className="w-full py-3 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50 transition-colors">{submitting ? '...' : L.cta.send}</button>
             </form>
           )}
         </div>
