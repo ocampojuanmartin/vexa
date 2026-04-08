@@ -5,18 +5,8 @@ import { useI18n } from '@/i18n/context'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  Clock,
-  Receipt,
-  FileText,
-  BarChart3,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  Globe,
-  UserCog,
+  LayoutDashboard, Users, Clock, Receipt, FileText, BarChart3,
+  Settings, LogOut, ChevronLeft, Globe, UserCog, Menu, X,
 } from 'lucide-react'
 
 type UserProfile = {
@@ -44,6 +34,7 @@ export default function Sidebar() {
   const router = useRouter()
   const { t, locale, setLocale } = useI18n()
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
 
   useEffect(() => {
@@ -62,6 +53,9 @@ export default function Sidebar() {
     loadProfile()
   }, [])
 
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false) }, [pathname])
+
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -75,76 +69,46 @@ export default function Sidebar() {
     return profile.module_permissions?.[module] !== false
   }
 
+  function navigate(href: string) {
+    router.push(href)
+    setMobileOpen(false)
+  }
+
   const filteredNav = navItems.filter((item) => canAccess(item.module))
   const isAdmin = profile?.role === 'admin'
+  const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 
-  return (
-    <aside
-      className={`flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-200 ${
-        collapsed ? 'w-16' : 'w-60'
-      }`}
-    >
-      {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-        {!collapsed && (
-          <span className="text-xl font-bold text-vexa-600 tracking-tight">
-            vexa
-          </span>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"
-        >
-          <ChevronLeft
-            size={18}
-            className={`transition-transform ${collapsed ? 'rotate-180' : ''}`}
-          />
-        </button>
-      </div>
-
+  const sidebarContent = (
+    <>
       {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
         {filteredNav.map((item) => {
-          const isActive =
-            item.href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(item.href)
+          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
           const Icon = item.icon
           return (
-            <button
-              key={item.href}
-              onClick={() => router.push(item.href)}
-              className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-vexa-50 text-vexa-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            <button key={item.href} onClick={() => navigate(item.href)}
+              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive ? 'bg-vexa-50 text-vexa-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
-              title={collapsed ? t(item.key) : undefined}
-            >
-              <Icon size={20} strokeWidth={1.75} />
+              title={collapsed ? t(item.key) : undefined}>
+              <Icon size={19} strokeWidth={isActive ? 2 : 1.5} />
               {!collapsed && <span>{t(item.key)}</span>}
             </button>
           )
         })}
-
         {isAdmin && (
           <>
-            <div className="my-3 border-t border-gray-100" />
+            <div className="my-2 mx-3 border-t border-gray-100" />
             {adminItems.map((item) => {
               const isActive = pathname.startsWith(item.href)
               const Icon = item.icon
               return (
-                <button
-                  key={item.href}
-                  onClick={() => router.push(item.href)}
-                  className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-vexa-50 text-vexa-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                <button key={item.href} onClick={() => navigate(item.href)}
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    isActive ? 'bg-vexa-50 text-vexa-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                   }`}
-                  title={collapsed ? t(item.key) : undefined}
-                >
-                  <Icon size={20} strokeWidth={1.75} />
+                  title={collapsed ? t(item.key) : undefined}>
+                  <Icon size={19} strokeWidth={isActive ? 2 : 1.5} />
                   {!collapsed && <span>{t(item.key)}</span>}
                 </button>
               )
@@ -154,48 +118,66 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 p-2 space-y-1">
-        {/* Language toggle */}
-        <button
-          onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50"
-          title={collapsed ? (locale === 'en' ? 'Español' : 'English') : undefined}
-        >
-          <Globe size={18} strokeWidth={1.75} />
-          {!collapsed && (
-            <span>{locale === 'en' ? 'Español' : 'English'}</span>
-          )}
+      <div className="border-t border-gray-100 p-2 space-y-0.5">
+        <button onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600">
+          <Globe size={17} strokeWidth={1.5} />
+          {!collapsed && <span>{locale === 'en' ? 'Español' : 'English'}</span>}
         </button>
-
-        {/* User info + logout */}
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-8 h-8 rounded-full bg-vexa-100 flex items-center justify-center text-vexa-700 text-xs font-medium flex-shrink-0">
-            {profile?.full_name
-              ?.split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2) || '?'}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-vexa-400 to-vexa-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+            {initials}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {profile?.full_name || '...'}
-              </p>
-              <p className="text-xs text-gray-500 capitalize">
-                {profile?.role || '...'}
-              </p>
+              <p className="text-sm font-medium text-gray-900 truncate">{profile?.full_name || '...'}</p>
+              <p className="text-xs text-gray-400 capitalize">{profile?.role || '...'}</p>
             </div>
           )}
-          <button
-            onClick={handleLogout}
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"
-            title={t('auth.logout')}
-          >
-            <LogOut size={16} />
+          <button onClick={handleLogout} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400" title={t('auth.logout')}>
+            <LogOut size={15} />
           </button>
         </div>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 flex items-center px-4 z-40">
+        <button onClick={() => setMobileOpen(true)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100">
+          <Menu size={22} className="text-gray-600" />
+        </button>
+        <span className="ml-3 text-lg font-bold text-vexa-600 tracking-tight">vexa</span>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-72 h-full bg-white flex flex-col shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-gray-100">
+              <span className="text-lg font-bold text-vexa-600 tracking-tight">vexa</span>
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
+                <X size={20} className="text-gray-400" />
+              </button>
+            </div>
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className={`hidden lg:flex flex-col h-screen bg-white border-r border-gray-100 transition-all duration-200 ${collapsed ? 'w-[60px]' : 'w-56'}`}>
+        <div className="flex items-center justify-between h-14 px-3 border-b border-gray-100">
+          {!collapsed && <span className="text-lg font-bold text-vexa-600 tracking-tight">vexa</span>}
+          <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 mx-auto">
+            <ChevronLeft size={16} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+        {sidebarContent}
+      </aside>
+    </>
   )
 }
