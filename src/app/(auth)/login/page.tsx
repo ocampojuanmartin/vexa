@@ -26,7 +26,7 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-vexa-600 tracking-tight">vexa</h1>
+        <h1 className="text-4xl font-semibold text-vexa-600 tracking-[4px]">vexa</h1>
         <p className="text-sm text-gray-400 mt-2">{t('auth.tagline')}</p>
       </div>
       <div className="bg-white rounded-2xl border border-gray-200/80 p-8 shadow-sm">
@@ -44,7 +44,7 @@ export default function LoginPage() {
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full py-3 bg-vexa-600 text-white rounded-xl text-sm font-semibold hover:bg-vexa-700 disabled:opacity-50 transition-colors shadow-sm shadow-vexa-600/20">
+            className="w-full py-3 bg-vexa-500 text-white rounded-xl text-sm font-semibold hover:bg-vexa-600 disabled:opacity-50 transition-colors shadow-sm shadow-vexa-500/20">
             {loading ? '...' : t('auth.login')}
           </button>
         </form>

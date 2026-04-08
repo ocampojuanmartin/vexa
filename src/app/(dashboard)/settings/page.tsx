@@ -83,7 +83,7 @@ export default function SettingsPage() {
             <h2 className="text-lg font-medium text-gray-900">{L.catTitle}</h2>
             <p className="text-sm text-gray-500 mt-1 max-w-xl">{L.catDesc}</p>
           </div>
-          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">
             <Plus size={16} />{L.new}
           </button>
         </div>
@@ -93,7 +93,7 @@ export default function SettingsPage() {
         ) : categories.length === 0 ? (
           <div className="mt-4 bg-white rounded-xl border border-gray-200 p-6 text-center text-sm text-gray-500">{L.noCategories}</div>
         ) : (
-          <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -123,7 +123,7 @@ export default function SettingsPage() {
       {demoRequests.length > 0 && (
         <div className="mt-10">
           <h2 className="text-lg font-medium text-gray-900 mb-4">{es ? 'Solicitudes de demo' : 'Demo requests'}</h2>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -169,7 +169,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>

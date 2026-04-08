@@ -18,7 +18,7 @@ export const locales: Record<Locale, Record<string, string>> = {
     'auth.signInWith': 'Sign in to Vexa',
     'auth.createAccount': 'Create your account',
     'auth.resetYourPassword': 'Reset your password',
-    'auth.tagline': 'Your practice, streamlined',
+    'auth.tagline': 'From hours to collection, no spreadsheets',
 
     // Sidebar
     'nav.dashboard': 'Dashboard',
@@ -67,7 +67,7 @@ export const locales: Record<Locale, Record<string, string>> = {
     'auth.signInWith': 'Ingresá a Vexa',
     'auth.createAccount': 'Creá tu cuenta',
     'auth.resetYourPassword': 'Restablecé tu contraseña',
-    'auth.tagline': 'Tu estudio, simplificado',
+    'auth.tagline': 'De las horas al cobro, sin planillas',
 
     // Sidebar
     'nav.dashboard': 'Panel',

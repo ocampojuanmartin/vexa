@@ -125,7 +125,7 @@ export default function Sidebar() {
           {!collapsed && <span>{locale === 'en' ? 'Español' : 'English'}</span>}
         </button>
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-vexa-400 to-vexa-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-vexa-500 to-vexa-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
             {initials}
           </div>
           {!collapsed && (
@@ -149,7 +149,7 @@ export default function Sidebar() {
         <button onClick={() => setMobileOpen(true)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100">
           <Menu size={22} className="text-gray-600" />
         </button>
-        <span className="ml-3 text-lg font-bold text-vexa-600 tracking-tight">vexa</span>
+        <span className="ml-3 text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>
       </div>
 
       {/* Mobile overlay */}
@@ -158,7 +158,7 @@ export default function Sidebar() {
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-72 h-full bg-white flex flex-col shadow-xl">
             <div className="flex items-center justify-between h-14 px-4 border-b border-gray-100">
-              <span className="text-lg font-bold text-vexa-600 tracking-tight">vexa</span>
+              <span className="text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>
               <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
                 <X size={20} className="text-gray-400" />
               </button>
@@ -171,7 +171,7 @@ export default function Sidebar() {
       {/* Desktop sidebar */}
       <aside className={`hidden lg:flex flex-col h-screen bg-white border-r border-gray-100 transition-all duration-200 ${collapsed ? 'w-[60px]' : 'w-56'}`}>
         <div className="flex items-center justify-between h-14 px-3 border-b border-gray-100">
-          {!collapsed && <span className="text-lg font-bold text-vexa-600 tracking-tight">vexa</span>}
+          {!collapsed && <span className="text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>}
           <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 mx-auto">
             <ChevronLeft size={16} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           </button>

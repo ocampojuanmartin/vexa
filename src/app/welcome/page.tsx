@@ -23,7 +23,7 @@ export default function LandingPage() {
   const L = {
     nav: { features: es?'Funcionalidades':'Features', how: es?'Cómo funciona':'How it works', contact: es?'Contacto':'Contact', login: es?'Ingresar':'Sign in' },
     hero: {
-      title: es ? 'Tu estudio jurídico, simplificado' : 'Your law firm, streamlined',
+      title: es ? 'De las horas al cobro, sin planillas' : 'From hours to collection, no spreadsheets',
       sub: es ? 'Vexa es la plataforma que reemplaza las planillas de Excel, los mensajes de WhatsApp y el control manual de horas por un sistema simple, claro y profesional.' : 'Vexa replaces Excel spreadsheets, WhatsApp threads, and manual hour tracking with a simple, clear, and professional system.',
       cta: es ? 'Solicitar demo' : 'Request a demo',
       cta2: es ? 'Ver funcionalidades' : 'See features',
@@ -69,13 +69,13 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold text-vexa-600 tracking-tight">vexa</span>
+          <span className="text-xl font-semibold text-vexa-600 tracking-[3px]">vexa</span>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.features}</a>
             <a href="#how" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.how}</a>
             <a href="#contact" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.contact}</a>
             <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} className="text-sm text-gray-400 hover:text-gray-600">{lang === 'es' ? 'EN' : 'ES'}</button>
-            <Link href="/login" className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">{L.nav.login}</Link>
+            <Link href="/login" className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.nav.login}</Link>
           </div>
           <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2"><Menu size={20} /></button>
         </div>
@@ -85,7 +85,7 @@ export default function LandingPage() {
             <a href="#how" onClick={() => setMenuOpen(false)} className="block text-sm text-gray-600">{L.nav.how}</a>
             <a href="#contact" onClick={() => setMenuOpen(false)} className="block text-sm text-gray-600">{L.nav.contact}</a>
             <button onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setMenuOpen(false) }} className="block text-sm text-gray-400">{lang === 'es' ? 'English' : 'Español'}</button>
-            <Link href="/login" className="block px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium text-center">{L.nav.login}</Link>
+            <Link href="/login" className="block px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium text-center">{L.nav.login}</Link>
           </div>
         )}
       </nav>
@@ -100,7 +100,7 @@ export default function LandingPage() {
             {L.hero.sub}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#contact" className="px-8 py-3 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors">{L.hero.cta}</a>
+            <a href="#contact" className="px-8 py-3 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 transition-colors">{L.hero.cta}</a>
             <a href="#features" className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">{L.hero.cta2}</a>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function LandingPage() {
           <div className="space-y-12">
             {L.how.steps.map((step, i) => (
               <div key={i} className="flex gap-6">
-                <div className="w-10 h-10 rounded-full bg-vexa-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">{step.n}</div>
+                <div className="w-10 h-10 rounded-full bg-vexa-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">{step.n}</div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">{step.title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
@@ -163,7 +163,7 @@ export default function LandingPage() {
               <p className="text-gray-900 font-medium">{L.cta.sent}</p>
             </div>
           ) : (
-            <form onSubmit={async e => { e.preventDefault(); setSubmitting(true); const sb = createClient(); await sb.from('demo_requests').insert({ full_name: formName, email: formEmail, firm_name: formFirm, firm_size: formSize }); setSubmitting(false); setFormSent(true) }} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+            <form onSubmit={async e => { e.preventDefault(); setSubmitting(true); try { const sb = createClient(); const { error } = await sb.from('demo_requests').insert({ full_name: formName, email: formEmail, firm_name: formFirm, firm_size: formSize }); if (!error) setFormSent(true) } catch {} finally { setSubmitting(false) } }} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{L.cta.name}</label>
                 <input type="text" required value={formName} onChange={e=>setFormName(e.target.value)} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
@@ -187,7 +187,7 @@ export default function LandingPage() {
                   <option value="100+">100+</option>
                 </select>
               </div>
-              <button type="submit" disabled={submitting} className="w-full py-3 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50 transition-colors">{submitting ? '...' : L.cta.send}</button>
+              <button type="submit" disabled={submitting} className="w-full py-3 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50 transition-colors">{submitting ? '...' : L.cta.send}</button>
             </form>
           )}
         </div>
@@ -196,7 +196,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="py-8 px-6 border-t border-gray-100">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xl font-bold text-vexa-600 tracking-tight">vexa</span>
+          <span className="text-xl font-semibold text-vexa-600 tracking-[3px]">vexa</span>
           <p className="text-sm text-gray-400">{L.footer.copy}</p>
           <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} className="text-sm text-gray-400 hover:text-gray-600">{lang === 'es' ? 'English' : 'Español'}</button>
         </div>

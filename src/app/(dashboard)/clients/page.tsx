@@ -181,7 +181,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
         {canEdit && (
-          <button onClick={openCreateClient} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">
+          <button onClick={openCreateClient} className="flex items-center gap-2 px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">
             <Plus size={16} />{L.newClient}
           </button>
         )}
@@ -208,7 +208,7 @@ export default function ClientsPage() {
             const cm = getClientMatters(client.id)
             const isOpen = expanded === client.id
             return (
-              <div key={client.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div key={client.id} className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
                 {/* Client row */}
                 <div className="flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50/50" onClick={() => setExpanded(isOpen ? null : client.id)}>
                   <ChevronRight size={16} className={`text-gray-400 mr-3 transition-transform ${isOpen?'rotate-90':''}`} />
@@ -312,7 +312,7 @@ export default function ClientsPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => setShowClientModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={saveClient} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={saveClient} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>
@@ -400,7 +400,7 @@ export default function ClientsPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => setShowMatterModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={saveMatter} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={saveMatter} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>

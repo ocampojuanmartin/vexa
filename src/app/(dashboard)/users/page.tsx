@@ -81,10 +81,10 @@ export default function UsersPage() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700"><Plus size={16}/>{L.new}</button>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600"><Plus size={16}/>{L.new}</button>
       </div>
       {loading ? <div className="mt-8 text-center text-sm text-gray-500">Loading...</div> : (
-        <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-gray-100 bg-gray-50">
               <th className="text-left px-4 py-3 font-medium text-gray-600">{L.name}</th>
@@ -152,7 +152,7 @@ export default function UsersPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>

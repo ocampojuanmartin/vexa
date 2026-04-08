@@ -86,6 +86,7 @@ export default function TimePage() {
 
   useEffect(() => { loadData() }, [loadData])
   useEffect(() => { setEntries(allEntries.filter(e => e.entry_date === selDate)) }, [allEntries, selDate])
+  useEffect(() => { return () => { if (intervalRef.current) clearInterval(intervalRef.current) } }, [])
 
   function prevMonth() { if (month === 0) { setMonth(11); setYear(year - 1) } else setMonth(month - 1); setSelDay(1) }
   function nextMonth() { if (month === 11) { setMonth(0); setYear(year + 1) } else setMonth(month + 1); setSelDay(1) }
@@ -207,7 +208,7 @@ export default function TimePage() {
               const today = isToday(d)
               return (
                 <button key={d} onClick={() => setSelDay(d)}
-                  className={`py-1.5 text-xs rounded-md transition-colors relative ${sel ? 'bg-vexa-600 text-white' : today ? 'bg-vexa-50 text-vexa-700 font-bold' : 'hover:bg-gray-100 text-gray-700'}`}>
+                  className={`py-1.5 text-xs rounded-md transition-colors relative ${sel ? 'bg-vexa-500 text-white' : today ? 'bg-vexa-50 text-vexa-700 font-bold' : 'hover:bg-gray-100 text-gray-700'}`}>
                   {d}
                   {hrs > 0 && !sel && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-vexa-400"></span>}
                 </button>
@@ -299,7 +300,7 @@ export default function TimePage() {
               {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
               <div className="space-y-2">
                 <button onClick={handleSave} disabled={saving}
-                  className="w-full px-4 py-2.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">
+                  className="w-full px-4 py-2.5 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">
                   {saving ? '...' : editing ? L.editing_ : L.insert}
                 </button>
                 {editing && (
@@ -311,7 +312,7 @@ export default function TimePage() {
         </div>
 
         {entries.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">

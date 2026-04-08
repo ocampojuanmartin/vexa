@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50 transition-colors"
             >
               {loading ? '...' : t('auth.resetPassword')}
             </button>

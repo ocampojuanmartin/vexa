@@ -204,7 +204,7 @@ export default function TimesheetsPage(){
                 </div>
               )}
               <div className="flex gap-2">
-                <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
+                <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
                 {(detail.status==='invoice_issued')&&<button onClick={()=>advanceStatus(detail,'unpaid')} disabled={statusSaving} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">{L.markUnpaid}</button>}
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function TimesheetsPage(){
                 <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
             </div>
             {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-            <button onClick={loadForReview} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">{L.pull}</button>
+            <button onClick={loadForReview} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.pull}</button>
           </div>
         </div>
       )
@@ -284,7 +284,7 @@ export default function TimesheetsPage(){
             </div>
           )}
           {reviewExpenses.length>0&&(
-            <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div>
               <table className="w-full text-sm"><tbody>
                 {reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50">
@@ -294,7 +294,7 @@ export default function TimesheetsPage(){
               </tbody></table>
             </div>
           )}
-          <div className="mt-4 flex justify-end"><button onClick={goToPreview} disabled={reviewEntries.length===0} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{L.next} →</button></div>
+          <div className="mt-4 flex justify-end"><button onClick={goToPreview} disabled={reviewEntries.length===0} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{L.next} →</button></div>
         </div>
       )
     }
@@ -332,7 +332,7 @@ export default function TimesheetsPage(){
             </table>
           </div>
           {reviewExpenses.length>0&&(
-            <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div>
               <table className="w-full text-sm"><tbody>
                 {reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50">
@@ -351,7 +351,7 @@ export default function TimesheetsPage(){
           {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
           <div className="mt-4 flex justify-between">
             <button onClick={goBackToReview} className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
-            <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+            <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
           </div>
         </div>
       )
@@ -383,7 +383,7 @@ export default function TimesheetsPage(){
       {loading?<div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
       :filtered.length===0?<div className="mt-12 text-center"><FileText size={28} className="text-gray-400 mx-auto mb-3"/><p className="text-gray-900 font-medium">{L.none}</p></div>
       :(
-        <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-gray-100 bg-gray-50">
               <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
