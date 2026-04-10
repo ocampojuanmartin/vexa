@@ -13,9 +13,8 @@ type Expense = {
 type Matter = { id: string; title: string; clients?: any }
 type Form = { expense_date: string; matter_id: string; category: string; amount: string; currency: string; is_reimbursable: boolean }
 
-const CATEGORIES = ['tasa_judicial','peritaje','viaticos','honorarios_perito','copias','notarial','mediacion','inscripcion','otros']
 const CURRENCIES = ['ARS','USD','EUR','BRL']
-const emptyForm = (): Form => ({ expense_date: new Date().toISOString().slice(0,10), matter_id:'', category:'otros', amount:'', currency:'ARS', is_reimbursable:false })
+const emptyForm = (): Form => ({ expense_date: new Date().toISOString().slice(0,10), matter_id:'', category:'', amount:'', currency:'ARS', is_reimbursable:false })
 
 export default function ExpensesPage() {
   const { locale } = useI18n()
@@ -63,7 +62,7 @@ export default function ExpensesPage() {
   }
 
   async function handleSave() {
-    if (!form.matter_id || !form.amount) { setError(es?'Asunto y monto obligatorios':'Matter and amount required'); return }
+    if (!form.matter_id || !form.amount || !form.category.trim()) { setError(es?'Asunto, descripción y monto obligatorios':'Matter, description and amount required'); return }
     const amt = parseFloat(form.amount)
     if (isNaN(amt) || amt <= 0) { setError(es?'Monto inválido':'Invalid amount'); return }
     setSaving(true); setError('')
@@ -90,20 +89,13 @@ export default function ExpensesPage() {
     setSaving(false); setShowModal(false); loadData()
   }
 
-  const catLabel = (c: string) => {
-    const map: Record<string,string> = es
-      ? { tasa_judicial:'Tasa judicial',peritaje:'Peritaje',viaticos:'Viáticos',honorarios_perito:'Hon. perito',copias:'Copias',notarial:'Notarial',mediacion:'Mediación',inscripcion:'Inscripción',otros:'Otros' }
-      : { tasa_judicial:'Court fee',peritaje:'Expert report',viaticos:'Travel',honorarios_perito:'Expert fees',copias:'Copies',notarial:'Notarial',mediacion:'Mediation',inscripcion:'Registration',otros:'Other' }
-    return map[c]||c
-  }
-
   const filtered = entries.filter(e => e.category.toLowerCase().includes(search.toLowerCase()) || e.matters?.title?.toLowerCase().includes(search.toLowerCase()) || e.matters?.clients?.name?.toLowerCase().includes(search.toLowerCase()))
   const total = filtered.reduce((s,e) => s + e.amount, 0)
   const canSeeAll = userRole === 'admin' || userRole === 'partner'
 
   const L = {
     title: es?'Gastos':'Expenses', new: es?'Nuevo gasto':'New expense', edit: es?'Editar gasto':'Edit expense',
-    date: es?'Fecha':'Date', matter: es?'Asunto':'Matter', cat: es?'Categoría':'Category',
+    date: es?'Fecha':'Date', matter: es?'Asunto':'Matter', cat: es?'Descripción':'Description',
     amount: es?'Monto':'Amount', curr: es?'Moneda':'Currency', reimb: es?'Reembolsable':'Reimbursable',
     receipt: es?'Comprobante':'Receipt', attach: es?'Adjuntar archivo':'Attach file',
     save: es?'Guardar':'Save', cancel: es?'Cancelar':'Cancel', search: es?'Buscar...':'Search...',
@@ -144,7 +136,7 @@ export default function ExpensesPage() {
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{e.expense_date}</td>
                     <td className="px-4 py-3"><div className="font-medium text-gray-900">{e.matters?.title}</div><div className="text-xs text-gray-400">{e.matters?.clients?.name}</div></td>
                     {canSeeAll && <td className="px-4 py-3 text-gray-600">{e.users?.full_name}</td>}
-                    <td className="px-4 py-3 text-gray-600">{catLabel(e.category)}{e.is_reimbursable && <span className="ml-1 text-xs text-green-600">(R)</span>}</td>
+                    <td className="px-4 py-3 text-gray-600">{e.category}{e.is_reimbursable && <span className="ml-1 text-xs text-green-600">(R)</span>}</td>
                     <td className="px-4 py-3 text-right font-medium text-gray-900">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
                     <td className="px-4 py-3 flex gap-1 justify-end">
                       {e.receipt_url && <a href={e.receipt_url} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-gray-100 text-gray-400"><ExternalLink size={14}/></a>}
@@ -170,8 +162,7 @@ export default function ExpensesPage() {
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.date}</label>
                   <input type="date" value={form.expense_date} onChange={e=>setForm({...form,expense_date:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.cat}</label>
-                  <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                    {CATEGORIES.map(c=><option key={c} value={c}>{catLabel(c)}</option>)}</select></div>
+                  <input type="text" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder={es?'Ej: Tasa judicial, peritaje, viáticos...':'E.g. Court fee, expert report, travel...'}/></div>
               </div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label>
                 <select value={form.matter_id} onChange={e=>setForm({...form,matter_id:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">

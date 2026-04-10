@@ -7,11 +7,11 @@ import { Plus, X, Pencil, UserCog, Shield, ShieldCheck, User } from 'lucide-reac
 
 type UserRecord = { id:string; email:string; full_name:string; role:string; hourly_rate:number; expected_monthly_hours:number; module_permissions:Record<string,boolean>; is_active:boolean; category_id:string|null }
 type Category = { id:string; name:string; default_rate:number }
-type Form = { full_name:string; email:string; password:string; role:string; hourly_rate:string; expected_monthly_hours:string; modules:Record<string,boolean>; category_id:string }
+type Form = { full_name:string; email:string; password:string; role:string; expected_monthly_hours:string; modules:Record<string,boolean>; category_id:string }
 
 const MODULES = ['clients','matters','time','expenses','timesheets','stats']
 const defaultModules = { clients:true, matters:true, time:true, expenses:true, timesheets:false, stats:false }
-const emptyForm = (): Form => ({ full_name:'', email:'', password:'', role:'associate', hourly_rate:'0', expected_monthly_hours:'160', modules:{...defaultModules}, category_id:'' })
+const emptyForm = (): Form => ({ full_name:'', email:'', password:'', role:'associate', expected_monthly_hours:'160', modules:{...defaultModules}, category_id:'' })
 
 export default function UsersPage() {
   const { locale } = useI18n()
@@ -47,7 +47,7 @@ export default function UsersPage() {
   function openCreate() { setEditing(null); setForm(emptyForm()); setError(''); setShowModal(true) }
   function openEdit(u: UserRecord) {
     setEditing(u)
-    setForm({ full_name:u.full_name, email:u.email, password:'', role:u.role, hourly_rate:u.hourly_rate.toString(), expected_monthly_hours:u.expected_monthly_hours.toString(), modules:u.module_permissions||{...defaultModules}, category_id:u.category_id||'' })
+    setForm({ full_name:u.full_name, email:u.email, password:'', role:u.role, expected_monthly_hours:u.expected_monthly_hours.toString(), modules:u.module_permissions||{...defaultModules}, category_id:u.category_id||'' })
     setError(''); setShowModal(true)
   }
 
@@ -57,9 +57,9 @@ export default function UsersPage() {
     setSaving(true); setError('')
     const sb = createClient()
     if (editing) {
-      await sb.from('users').update({ full_name:form.full_name.trim(), role:form.role as any, hourly_rate:parseFloat(form.hourly_rate)||0, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }).eq('id', editing.id)
+      await sb.from('users').update({ full_name:form.full_name.trim(), role:form.role as any, hourly_rate:0, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }).eq('id', editing.id)
     } else {
-      const res = await fetch('/api/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:form.email.trim(), password:form.password, full_name:form.full_name.trim(), role:form.role, hourly_rate:parseFloat(form.hourly_rate)||0, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }) })
+      const res = await fetch('/api/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:form.email.trim(), password:form.password, full_name:form.full_name.trim(), role:form.role, hourly_rate:0, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }) })
       const result = await res.json()
       if (!res.ok) { setError(result.error||'Error'); setSaving(false); return }
     }
@@ -75,7 +75,7 @@ export default function UsersPage() {
 
   if (!isAdmin) return <div className="text-center text-sm text-gray-500 mt-12">{es?'Sin acceso':'No access'}</div>
 
-  const L = { title:es?'Usuarios':'Users', new:es?'Nuevo usuario':'New user', edit:es?'Editar usuario':'Edit user', name:es?'Nombre completo':'Full name', email:'Email', password:es?'Contraseña':'Password', role:es?'Rol':'Role', rate:es?'Tarifa ($/hr)':'Rate ($/hr)', expected:es?'Horas esperadas/mes':'Expected hrs/month', modules:es?'Módulos habilitados':'Enabled modules', category:es?'Categoría':'Category', save:es?'Guardar':'Save', cancel:es?'Cancelar':'Cancel', active:es?'Activo':'Active', deactivate:es?'Desactivar':'Deactivate', activate:es?'Activar':'Activate', select:es?'Sin categoría':'No category' }
+  const L = { title:es?'Usuarios':'Users', new:es?'Nuevo usuario':'New user', edit:es?'Editar usuario':'Edit user', name:es?'Nombre completo':'Full name', email:'Email', password:es?'Contraseña':'Password', role:es?'Rol':'Role', expected:es?'Horas esperadas/mes':'Expected hrs/month', modules:es?'Módulos habilitados':'Enabled modules', category:es?'Categoría':'Category', save:es?'Guardar':'Save', cancel:es?'Cancelar':'Cancel', active:es?'Activo':'Active', deactivate:es?'Desactivar':'Deactivate', activate:es?'Activar':'Activate', select:es?'Sin categoría':'No category' }
 
   return (
     <div>
@@ -90,7 +90,6 @@ export default function UsersPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">{L.name}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">{L.role}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">{L.category}</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">{L.rate}</th>
               <th className="text-center px-4 py-3 font-medium text-gray-600">{L.active}</th>
               <th className="w-20"></th>
             </tr></thead>
@@ -100,7 +99,6 @@ export default function UsersPage() {
                   <td className="px-4 py-3"><div className="font-medium text-gray-900">{u.full_name}</div><div className="text-xs text-gray-400">{u.email}</div></td>
                   <td className="px-4 py-3"><span className="inline-flex items-center gap-1.5 capitalize">{roleIcon(u.role)}{roleLabel(u.role)}</span></td>
                   <td className="px-4 py-3 text-gray-600">{catName(u.category_id)}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">${u.hourly_rate}</td>
                   <td className="px-4 py-3 text-center"><span className={`inline-block w-2 h-2 rounded-full ${u.is_active?'bg-green-500':'bg-gray-300'}`}></span></td>
                   <td className="px-4 py-3 flex gap-1 justify-end">
                     <button onClick={()=>openEdit(u)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"><Pencil size={15}/></button>
@@ -131,15 +129,13 @@ export default function UsersPage() {
                   <select value={form.role} onChange={e=>setForm({...form,role:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="associate">{roleLabel('associate')}</option><option value="partner">{roleLabel('partner')}</option><option value="admin">{roleLabel('admin')}</option></select></div>
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.category}</label>
-                  <select value={form.category_id} onChange={e=>{const cat=categories.find(c=>c.id===e.target.value);setForm({...form,category_id:e.target.value,hourly_rate:cat?cat.default_rate.toString():form.hourly_rate})}} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.category_id} onChange={e=>setForm({...form,category_id:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="">{L.select}</option>
                     {categories.map(c=><option key={c.id} value={c.id}>{c.name} (${c.default_rate}/hr)</option>)}</select></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.rate}</label>
-                  <input type="number" step="1" value={form.hourly_rate} onChange={e=>setForm({...form,hourly_rate:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.expected}</label>
-                  <input type="number" value={form.expected_monthly_hours} onChange={e=>setForm({...form,expected_monthly_hours:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{L.expected}</label>
+                <input type="number" value={form.expected_monthly_hours} onChange={e=>setForm({...form,expected_monthly_hours:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/>
               </div>
               {form.role !== 'admin' && (
                 <div><label className="block text-sm font-medium text-gray-700 mb-2">{L.modules}</label>

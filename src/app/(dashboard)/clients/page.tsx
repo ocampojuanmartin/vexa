@@ -10,20 +10,20 @@ type Client = {
   phone: string|null; address: string|null; notes: string|null
 }
 type Matter = {
-  id: string; title: string; status: string; is_restricted: boolean
+  id: string; title: string; status: string; is_restricted: boolean; is_billable: boolean
   custom_rate: number|null; client_id: string
 }
 type User = { id: string; full_name: string; role: string }
 
 type ClientForm = { name: string; tax_id: string; email: string; phone: string; address: string; notes: string }
 type MatterForm = {
-  title: string; status: string; custom_rate: string
+  title: string; status: string; custom_rate: string; is_billable: boolean
   is_restricted: boolean; restricted_associates: string[]
   originators: { user_id: string; percentage: number }[]
 }
 
 const emptyClientForm = (): ClientForm => ({ name:'', tax_id:'', email:'', phone:'', address:'', notes:'' })
-const emptyMatterForm = (): MatterForm => ({ title:'', status:'active', custom_rate:'', is_restricted:false, restricted_associates:[], originators:[] })
+const emptyMatterForm = (): MatterForm => ({ title:'', status:'active', custom_rate:'', is_billable:true, is_restricted:false, restricted_associates:[], originators:[] })
 
 const STATUSES = ['active','suspended','closed']
 
@@ -105,6 +105,7 @@ export default function ClientsPage() {
     ])
     setMatterForm({
       title:m.title, status:m.status, custom_rate:m.custom_rate?.toString()||'',
+      is_billable: m.is_billable !== false,
       is_restricted: m.is_restricted || false,
       restricted_associates:(lawyers.data||[]).map((l:any)=>l.user_id),
       originators: orig.data||[],
@@ -118,6 +119,7 @@ export default function ClientsPage() {
     const payload = {
       title:matterForm.title.trim(), status:matterForm.status,
       client_id:matterClientId, is_restricted:matterForm.is_restricted,
+      is_billable:matterForm.is_billable,
       custom_rate:matterForm.custom_rate?parseFloat(matterForm.custom_rate):null,
       firm_id:firmId, lead_lawyer_id:null, matter_type:'general',
     }
@@ -158,6 +160,7 @@ export default function ClientsPage() {
     email: 'Email', phone: es?'Teléfono':'Phone', address: es?'Dirección':'Address', notes: es?'Notas':'Notes',
     matterTitle: es?'Título':'Title', status: es?'Estado':'Status',
     rate: es?'Tarifa ($/hr)':'Rate ($/hr)',
+    billable: es?'Asunto facturable':'Billable matter',
     originators: es?'Socios originadores':'Originating partners',
     addOrig: es?'+ Agregar originador':'+ Add originator',
     restricted: es?'Asunto restringido':'Restricted matter',
@@ -337,6 +340,14 @@ export default function ClientsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00" />
                 </div>
               </div>
+
+              {/* Billable toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={matterForm.is_billable}
+                  onChange={e=>setMatterForm({...matterForm, is_billable:e.target.checked})}
+                  className="rounded border-gray-300" />
+                <span className="text-sm font-medium text-gray-700">{L.billable}</span>
+              </label>
 
               {/* Originators */}
               <div>

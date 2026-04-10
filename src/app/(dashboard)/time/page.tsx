@@ -10,7 +10,7 @@ type TimeEntry = {
   is_billable: boolean; is_locked: boolean; matter_id: string; user_id: string
   matters?: any; users?: any
 }
-type Matter = { id: string; title: string; clients?: any }
+type Matter = { id: string; title: string; is_billable?: boolean; clients?: any }
 type ClientOption = { id: string; name: string }
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
@@ -44,7 +44,7 @@ export default function TimePage() {
   const [formHrs, setFormHrs] = useState(0)
   const [formMins, setFormMins] = useState(0)
   const [formDesc, setFormDesc] = useState('')
-  const [formBillable, setFormBillable] = useState(true)
+  
   const [editing, setEditing] = useState<TimeEntry | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -77,7 +77,7 @@ export default function TimePage() {
 
     const [c, m] = await Promise.all([
       sb.from('clients').select('id, name').order('name'),
-      sb.from('matters').select('id, title, clients(name)').eq('status', 'active').order('title'),
+      sb.from('matters').select('id, title, is_billable, clients(name)').eq('status', 'active').order('title'),
     ])
     if (c.data) setClients(c.data)
     if (m.data) setMatters(m.data as any)
@@ -100,7 +100,7 @@ export default function TimePage() {
     ? matters.filter(m => m.clients?.name && clients.find(c => c.id === selClient)?.name === m.clients.name)
     : matters
 
-  function resetForm() { setSelClient(''); setSelMatter(''); setFormHrs(0); setFormMins(0); setFormDesc(''); setFormBillable(true); setEditing(null); setError('') }
+  function resetForm() { setSelClient(''); setSelMatter(''); setFormHrs(0); setFormMins(0); setFormDesc(''); setEditing(null); setError('') }
 
   function startEdit(e: TimeEntry) {
     if (e.is_locked) return
@@ -108,7 +108,7 @@ export default function TimePage() {
     setSelMatter(e.matter_id)
     const hrs = Math.floor(e.hours_logged)
     const mins = Math.round((e.hours_logged - hrs) * 60)
-    setFormHrs(hrs); setFormMins(mins); setFormDesc(e.description); setFormBillable(e.is_billable); setError('')
+    setFormHrs(hrs); setFormMins(mins); setFormDesc(e.description); setError('')
   }
 
   async function handleSave() {
@@ -123,7 +123,7 @@ export default function TimePage() {
 
     const payload = {
       entry_date: selDate, matter_id: selMatter, description: formDesc.trim(),
-      hours_logged: hmToDecimal(formHrs, formMins), is_billable: formBillable,
+      hours_logged: hmToDecimal(formHrs, formMins), is_billable: matters.find(m=>m.id===selMatter)?.is_billable !== false,
       user_id: userId, firm_id: firmId,
     }
     if (editing) {
@@ -282,10 +282,6 @@ export default function TimePage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={formBillable} onChange={e => setFormBillable(e.target.checked)} className="rounded border-gray-300" />
-                <span className="text-sm text-gray-700">{L.billable}</span>
-              </label>
             </div>
 
             <div className="flex flex-col">
