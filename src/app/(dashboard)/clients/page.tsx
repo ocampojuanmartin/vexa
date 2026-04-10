@@ -3,31 +3,29 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/i18n/context'
-import { Plus, Search, X, Building2, Pencil, ChevronRight, ChevronDown, Briefcase } from 'lucide-react'
+import { Plus, Search, X, Building2, Pencil, ChevronRight, Briefcase, ShieldAlert } from 'lucide-react'
 
 type Client = {
   id: string; name: string; tax_id: string|null; email: string|null
   phone: string|null; address: string|null; notes: string|null
 }
 type Matter = {
-  id: string; title: string; matter_type: string; status: string
-  lead_lawyer_id: string|null; custom_rate: number|null; client_id: string
-  users?: any
+  id: string; title: string; status: string; is_restricted: boolean
+  custom_rate: number|null; client_id: string
 }
 type User = { id: string; full_name: string; role: string }
 
 type ClientForm = { name: string; tax_id: string; email: string; phone: string; address: string; notes: string }
 type MatterForm = {
-  title: string; matter_type: string; status: string; lead_lawyer_id: string
-  custom_rate: string; assigned_lawyers: string[]
+  title: string; status: string; custom_rate: string
+  is_restricted: boolean; restricted_associates: string[]
   originators: { user_id: string; percentage: number }[]
 }
 
 const emptyClientForm = (): ClientForm => ({ name:'', tax_id:'', email:'', phone:'', address:'', notes:'' })
-const emptyMatterForm = (): MatterForm => ({ title:'', matter_type:'general', status:'intake', lead_lawyer_id:'', custom_rate:'', assigned_lawyers:[], originators:[] })
+const emptyMatterForm = (): MatterForm => ({ title:'', status:'active', custom_rate:'', is_restricted:false, restricted_associates:[], originators:[] })
 
-const TYPES = ['general','civil','penal','laboral','familia','comercial','contractual','consultoria','administrativo']
-const STATUSES = ['intake','active','suspended','closed']
+const STATUSES = ['active','suspended','closed']
 
 export default function ClientsPage() {
   const { locale } = useI18n()
@@ -41,12 +39,10 @@ export default function ClientsPage() {
   const [userRole, setUserRole] = useState('')
   const [firmId, setFirmId] = useState('')
 
-  // Client modal
   const [showClientModal, setShowClientModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client|null>(null)
   const [clientForm, setClientForm] = useState<ClientForm>(emptyClientForm())
 
-  // Matter modal
   const [showMatterModal, setShowMatterModal] = useState(false)
   const [editingMatter, setEditingMatter] = useState<Matter|null>(null)
   const [matterForm, setMatterForm] = useState<MatterForm>(emptyMatterForm())
@@ -64,7 +60,7 @@ export default function ClientsPage() {
     setUserRole(p.role); setFirmId(p.firm_id)
     const [c, m, u] = await Promise.all([
       sb.from('clients').select('*').order('name'),
-      sb.from('matters').select('*, users!matters_lead_lawyer_id_fkey(full_name)').order('title'),
+      sb.from('matters').select('*').order('title'),
       sb.from('users').select('id, full_name, role').eq('is_active', true).order('full_name'),
     ])
     if (c.data) setClients(c.data)
@@ -77,12 +73,10 @@ export default function ClientsPage() {
 
   const canEdit = userRole === 'admin' || userRole === 'partner'
   const partners = users.filter(u => u.role === 'partner' || u.role === 'admin')
+  const associates = users.filter(u => u.role === 'associate')
 
-  function getClientMatters(clientId: string) {
-    return matters.filter(m => m.client_id === clientId)
-  }
+  function getClientMatters(clientId: string) { return matters.filter(m => m.client_id === clientId) }
 
-  // CLIENT CRUD
   function openCreateClient() { setEditingClient(null); setClientForm(emptyClientForm()); setError(''); setShowClientModal(true) }
   function openEditClient(c: Client, e: React.MouseEvent) {
     e.stopPropagation()
@@ -100,10 +94,7 @@ export default function ClientsPage() {
     setSaving(false); setShowClientModal(false); loadData()
   }
 
-  // MATTER CRUD
-  function openCreateMatter(clientId: string) {
-    setMatterClientId(clientId); setEditingMatter(null); setMatterForm(emptyMatterForm()); setError(''); setShowMatterModal(true)
-  }
+  function openCreateMatter(clientId: string) { setMatterClientId(clientId); setEditingMatter(null); setMatterForm(emptyMatterForm()); setError(''); setShowMatterModal(true) }
   async function openEditMatter(m: Matter, e: React.MouseEvent) {
     e.stopPropagation()
     setMatterClientId(m.client_id); setEditingMatter(m)
@@ -113,9 +104,10 @@ export default function ClientsPage() {
       sb.from('matter_lawyers').select('user_id').eq('matter_id', m.id),
     ])
     setMatterForm({
-      title:m.title, matter_type:m.matter_type, status:m.status,
-      lead_lawyer_id:m.lead_lawyer_id||'', custom_rate:m.custom_rate?.toString()||'',
-      originators: orig.data||[], assigned_lawyers:(lawyers.data||[]).map((l:any)=>l.user_id)
+      title:m.title, status:m.status, custom_rate:m.custom_rate?.toString()||'',
+      is_restricted: m.is_restricted || false,
+      restricted_associates:(lawyers.data||[]).map((l:any)=>l.user_id),
+      originators: orig.data||[],
     })
     setError(''); setShowMatterModal(true)
   }
@@ -124,9 +116,10 @@ export default function ClientsPage() {
     setSaving(true); setError('')
     const sb = createClient()
     const payload = {
-      title:matterForm.title.trim(), matter_type:matterForm.matter_type, status:matterForm.status,
-      client_id:matterClientId, lead_lawyer_id:matterForm.lead_lawyer_id||null,
-      custom_rate:matterForm.custom_rate?parseFloat(matterForm.custom_rate):null, firm_id:firmId
+      title:matterForm.title.trim(), status:matterForm.status,
+      client_id:matterClientId, is_restricted:matterForm.is_restricted,
+      custom_rate:matterForm.custom_rate?parseFloat(matterForm.custom_rate):null,
+      firm_id:firmId, lead_lawyer_id:null, matter_type:'general',
     }
     let matterId: string
     if (editingMatter) {
@@ -138,25 +131,21 @@ export default function ClientsPage() {
       if (err||!data) { setError(err?.message||'Error'); setSaving(false); return }
       matterId = data.id
     }
+    // Sync originators
     await sb.from('matter_originators').delete().eq('matter_id', matterId)
     if (matterForm.originators.length > 0) {
       await sb.from('matter_originators').insert(matterForm.originators.filter(o=>o.user_id).map(o=>({ matter_id:matterId, user_id:o.user_id, percentage:o.percentage })))
     }
+    // Sync restricted associates
     await sb.from('matter_lawyers').delete().eq('matter_id', matterId)
-    if (matterForm.assigned_lawyers.length > 0) {
-      await sb.from('matter_lawyers').insert(matterForm.assigned_lawyers.map(uid=>({ matter_id:matterId, user_id:uid })))
+    if (matterForm.is_restricted && matterForm.restricted_associates.length > 0) {
+      await sb.from('matter_lawyers').insert(matterForm.restricted_associates.map(uid=>({ matter_id:matterId, user_id:uid })))
     }
     setSaving(false); setShowMatterModal(false); loadData()
   }
 
-  const statusLabel = (s: string) => {
-    const m: Record<string,string> = es ? { intake:'Ingreso',active:'Activo',suspended:'Suspendido',closed:'Cerrado' } : { intake:'Intake',active:'Active',suspended:'Suspended',closed:'Closed' }
-    return m[s]||s
-  }
-  const statusColor = (s: string) => {
-    const c: Record<string,string> = { intake:'bg-blue-50 text-blue-700',active:'bg-green-50 text-green-700',suspended:'bg-amber-50 text-amber-700',closed:'bg-gray-100 text-gray-600' }
-    return c[s]||'bg-gray-100 text-gray-600'
-  }
+  const statusLabel = (s: string) => (es ? { active:'Activo', suspended:'Suspendido', closed:'Cerrado' } : { active:'Active', suspended:'Suspended', closed:'Closed' })[s] || s
+  const statusColor = (s: string) => ({ active:'bg-green-50 text-green-700', suspended:'bg-amber-50 text-amber-700', closed:'bg-gray-100 text-gray-600' })[s] || 'bg-gray-100 text-gray-600'
 
   const filtered = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || (c.tax_id && c.tax_id.includes(search)))
 
@@ -164,16 +153,21 @@ export default function ClientsPage() {
     title: es?'Clientes & Asuntos':'Clients & Matters',
     newClient: es?'Nuevo cliente':'New client', editClient: es?'Editar cliente':'Edit client',
     newMatter: es?'Nuevo asunto':'New matter', editMatter: es?'Editar asunto':'Edit matter',
-    name: es?'Nombre / Razón social':'Name / Company', taxId: es?'CUIT / CUIL':'Tax ID',
+    name: es?'Nombre / Razón social':'Name / Company',
+    taxId: es?'Identificación tributaria':'Tax ID',
     email: 'Email', phone: es?'Teléfono':'Phone', address: es?'Dirección':'Address', notes: es?'Notas':'Notes',
-    matterTitle: es?'Título':'Title', type: es?'Tipo':'Type', status: es?'Estado':'Status',
-    lead: es?'Abogado principal':'Lead lawyer', rate: es?'Tarifa ($/hr)':'Rate ($/hr)',
-    originators: es?'Socios originadores':'Originating partners', assigned: es?'Abogados asignados':'Assigned lawyers',
+    matterTitle: es?'Título':'Title', status: es?'Estado':'Status',
+    rate: es?'Tarifa ($/hr)':'Rate ($/hr)',
+    originators: es?'Socios originadores':'Originating partners',
     addOrig: es?'+ Agregar originador':'+ Add originator',
+    restricted: es?'Asunto restringido':'Restricted matter',
+    restrictedDesc: es?'Solo los asociados seleccionados podrán ver y cargar horas en este asunto':'Only selected associates can view and log hours on this matter',
+    selectAssociates: es?'Asociados con acceso':'Associates with access',
     save: es?'Guardar':'Save', cancel: es?'Cancelar':'Cancel',
     search: es?'Buscar clientes...':'Search clients...',
     noClients: es?'No hay clientes':'No clients yet', noMatters: es?'Sin asuntos':'No matters',
     matters: es?'asuntos':'matters', select: es?'Seleccionar':'Select',
+    taxPlaceholder: es?'Ej: CUIT, RUT, RFC, EIN':'E.g. CUIT, RUT, RFC, EIN',
   }
 
   return (
@@ -208,8 +202,7 @@ export default function ClientsPage() {
             const cm = getClientMatters(client.id)
             const isOpen = expanded === client.id
             return (
-              <div key={client.id} className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-                {/* Client row */}
+              <div key={client.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <div className="flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50/50" onClick={() => setExpanded(isOpen ? null : client.id)}>
                   <ChevronRight size={16} className={`text-gray-400 mr-3 transition-transform ${isOpen?'rotate-90':''}`} />
                   <div className="flex-1 min-w-0">
@@ -227,8 +220,6 @@ export default function ClientsPage() {
                     </button>
                   )}
                 </div>
-
-                {/* Expanded: matters */}
                 {isOpen && (
                   <div className="border-t border-gray-100 bg-gray-50/30 px-4 py-3">
                     {cm.length === 0 ? (
@@ -240,10 +231,9 @@ export default function ClientsPage() {
                             <Briefcase size={14} className="text-gray-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-medium text-gray-900">{m.title}</span>
-                              <span className="text-xs text-gray-400 ml-2 capitalize">{m.matter_type}</span>
+                              {m.is_restricted && <ShieldAlert size={12} className="inline ml-2 text-amber-500" />}
                             </div>
                             <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(m.status)}`}>{statusLabel(m.status)}</span>
-                            <span className="text-xs text-gray-400">{m.users?.full_name||''}</span>
                             {canEdit && (
                               <button onClick={(e) => openEditMatter(m, e)} className="p-1 rounded hover:bg-gray-100 text-gray-400">
                                 <Pencil size={13} />
@@ -255,7 +245,7 @@ export default function ClientsPage() {
                     )}
                     {canEdit && (
                       <button onClick={() => openCreateMatter(client.id)}
-                        className="mt-2 flex items-center gap-1.5 text-sm text-vexa-600 hover:text-vexa-700 font-medium">
+                        className="mt-2 flex items-center gap-1.5 text-sm text-vexa-500 hover:text-vexa-600 font-medium">
                         <Plus size={14} />{L.newMatter}
                       </button>
                     )}
@@ -285,7 +275,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{L.taxId}</label>
                   <input type="text" value={clientForm.tax_id} onChange={e=>setClientForm({...clientForm, tax_id:e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="20-12345678-9" />
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder={L.taxPlaceholder} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{L.phone}</label>
@@ -334,27 +324,10 @@ export default function ClientsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{L.type}</label>
-                  <select value={matterForm.matter_type} onChange={e=>setMatterForm({...matterForm, matter_type:e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white capitalize">
-                    {TYPES.map(t=><option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{L.status}</label>
                   <select value={matterForm.status} onChange={e=>setMatterForm({...matterForm, status:e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     {STATUSES.map(s=><option key={s} value={s}>{statusLabel(s)}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{L.lead}</label>
-                  <select value={matterForm.lead_lawyer_id} onChange={e=>setMatterForm({...matterForm, lead_lawyer_id:e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                    <option value="">{L.select}</option>
-                    {users.map(u=><option key={u.id} value={u.id}>{u.full_name}</option>)}
                   </select>
                 </div>
                 <div>
@@ -364,6 +337,8 @@ export default function ClientsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00" />
                 </div>
               </div>
+
+              {/* Originators */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">{L.originators}</label>
                 {matterForm.originators.map((o,i)=>(
@@ -380,22 +355,40 @@ export default function ClientsPage() {
                   </div>
                 ))}
                 <button onClick={()=>setMatterForm({...matterForm,originators:[...matterForm.originators,{user_id:'',percentage:100}]})}
-                  className="text-sm text-vexa-600 hover:text-vexa-700 font-medium">{L.addOrig}</button>
+                  className="text-sm text-vexa-500 hover:text-vexa-600 font-medium">{L.addOrig}</button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{L.assigned}</label>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {users.map(u=>(
-                    <label key={u.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
-                      <input type="checkbox" checked={matterForm.assigned_lawyers.includes(u.id)}
-                        onChange={()=>{const a=matterForm.assigned_lawyers.includes(u.id)?matterForm.assigned_lawyers.filter(id=>id!==u.id):[...matterForm.assigned_lawyers,u.id];setMatterForm({...matterForm,assigned_lawyers:a})}}
-                        className="rounded border-gray-300" />
-                      <span className="text-sm text-gray-700">{u.full_name}</span>
-                      <span className="text-xs text-gray-400 capitalize">({u.role})</span>
-                    </label>
-                  ))}
+
+              {/* Restricted toggle */}
+              <div className="border-t pt-4 border-gray-100">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" checked={matterForm.is_restricted}
+                    onChange={e=>setMatterForm({...matterForm, is_restricted:e.target.checked, restricted_associates: e.target.checked ? matterForm.restricted_associates : []})}
+                    className="rounded border-gray-300" />
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500" />{L.restricted}</span>
+                    <p className="text-xs text-gray-400 mt-0.5">{L.restrictedDesc}</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Associate selection (only when restricted) */}
+              {matterForm.is_restricted && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{L.selectAssociates}</label>
+                  <div className="space-y-1 max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                    {associates.map(u=>(
+                      <label key={u.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" checked={matterForm.restricted_associates.includes(u.id)}
+                          onChange={()=>{const a=matterForm.restricted_associates.includes(u.id)?matterForm.restricted_associates.filter(id=>id!==u.id):[...matterForm.restricted_associates,u.id];setMatterForm({...matterForm,restricted_associates:a})}}
+                          className="rounded border-gray-300" />
+                        <span className="text-sm text-gray-700">{u.full_name}</span>
+                      </label>
+                    ))}
+                    {associates.length === 0 && <p className="text-xs text-gray-400 py-2 text-center">{es?'No hay asociados':'No associates'}</p>}
+                  </div>
                 </div>
-              </div>
+              )}
+
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
             <div className="flex justify-end gap-3 mt-6">

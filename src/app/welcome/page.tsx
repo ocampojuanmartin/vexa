@@ -24,13 +24,13 @@ export default function LandingPage() {
     nav: { features: es?'Funcionalidades':'Features', how: es?'Cómo funciona':'How it works', contact: es?'Contacto':'Contact', login: es?'Ingresar':'Sign in' },
     hero: {
       title: es ? 'De las horas al cobro, sin planillas' : 'From hours to collection, no spreadsheets',
-      sub: es ? 'Vexa es la plataforma que reemplaza las planillas de Excel, los mensajes de WhatsApp y el control manual de horas por un sistema simple, claro y profesional.' : 'Vexa replaces Excel spreadsheets, WhatsApp threads, and manual hour tracking with a simple, clear, and professional system.',
+      sub: es ? 'Vexa es la plataforma que reemplaza las planillas de Excel y el control manual de horas por un sistema simple, claro y profesional.' : 'Vexa replaces Excel spreadsheets and manual hour tracking with a simple, clear, and professional system.',
       cta: es ? 'Solicitar demo' : 'Request a demo',
       cta2: es ? 'Ver funcionalidades' : 'See features',
     },
     features: {
       title: es ? 'Todo lo que tu estudio necesita' : 'Everything your firm needs',
-      sub: es ? 'Diseñado específicamente para estudios jurídicos de 10 a 100+ abogados.' : 'Built specifically for law firms with 10 to 100+ lawyers.',
+      sub: es ? 'Diseñado específicamente para estudios jurídicos.' : 'Built specifically for law firms.',
       items: [
         { icon: Clock, title: es?'Carga de horas':'Time tracking', desc: es?'Calendario visual con carga por día, cronómetro integrado, horas y minutos. Cada abogado carga sus horas y el socio las revisa.':'Visual calendar with daily entry, built-in timer, hours and minutes. Associates log, partners review.' },
         { icon: FileText, title: es?'Timesheets y facturación':'Timesheets & billing', desc: es?'Generá timesheets por asunto y período. Ajustá las horas antes de enviar al cliente. Seguimiento completo: borrador → enviado → aprobado → facturado → cobrado.':'Generate timesheets per matter and period. Adjust hours before sending. Full tracking: draft → sent → approved → invoiced → paid.' },
