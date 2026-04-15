@@ -81,13 +81,22 @@ export default function TimesheetsPage(){
     if(!selMatter||!dateFrom||!dateTo){setError(es?'Completá todos los campos':'Fill all fields');return}
     setError('')
     const sb=createClient()
-    const matter=matters.find(m=>m.id===selMatter)
-    const matterRate=matter?.custom_rate||0
-    const{data:mLawyers}=await sb.from('matter_lawyers').select('user_id, custom_rate').eq('matter_id',selMatter)
-    const lawyerRateMap:Record<string,number>={}
-    mLawyers?.forEach((ml:any)=>{if(ml.custom_rate)lawyerRateMap[ml.user_id]=ml.custom_rate})
+    // Check for existing timesheet on same matter+period
+    const{data:existing}=await sb.from('timesheets').select('id, period_start, period_end, status').eq('matter_id',selMatter)
+    const overlap=(existing||[]).find((t:any)=>t.period_start<=dateTo&&t.period_end>=dateFrom)
+    if(overlap){setError(es?`Ya existe un timesheet para este asunto en el período ${overlap.period_start} → ${overlap.period_end} (${overlap.status})`:`A timesheet already exists for this matter in period ${overlap.period_start} → ${overlap.period_end} (${overlap.status})`);return}
 
-    const{data:te}=await sb.from('time_entries').select('*, users!time_entries_user_id_fkey(full_name, hourly_rate)').eq('matter_id',selMatter).eq('is_billable',true).gte('entry_date',dateFrom).lte('entry_date',dateTo).order('entry_date')
+    const matter=matters.find(m=>m.id===selMatter)
+    // Load category rates for this matter
+    const{data:catRates}=await sb.from('matter_category_rates').select('category_id, rate').eq('matter_id',selMatter)
+    const catRateMap:Record<string,number>={}
+    catRates?.forEach((cr:any)=>{catRateMap[cr.category_id]=cr.rate})
+    // Load user categories
+    const{data:userCats}=await sb.from('users').select('id, category_id, hourly_rate').eq('is_active',true)
+    const userCatMap:Record<string,{category_id:string|null;hourly_rate:number}>={}
+    userCats?.forEach((u:any)=>{userCatMap[u.id]={category_id:u.category_id,hourly_rate:u.hourly_rate}})
+
+    const{data:te}=await sb.from('time_entries').select('*, users!time_entries_user_id_fkey(full_name, hourly_rate, category_id)').eq('matter_id',selMatter).eq('is_billable',true).gte('entry_date',dateFrom).lte('entry_date',dateTo).order('entry_date')
     const{data:existingItems}=await sb.from('timesheet_items').select('time_entry_id')
     const billedIds=new Set((existingItems||[]).map((i:any)=>i.time_entry_id))
     const unbilled=(te||[]).filter((e:any)=>!billedIds.has(e.id))
@@ -99,7 +108,8 @@ export default function TimesheetsPage(){
 
     setReviewEntries(unbilled as any)
     setItemEdits(unbilled.map((e:any)=>{
-      const rate=lawyerRateMap[e.user_id]||matterRate||e.users?.hourly_rate||0
+      const userCat=e.users?.category_id
+      const rate=userCat&&catRateMap[userCat]?catRateMap[userCat]:e.users?.hourly_rate||0
       return{time_entry_id:e.id,hours_billed:e.hours_logged,rate,user_id:e.user_id}
     }))
     setReviewExpenses(unbilledExp as any)
