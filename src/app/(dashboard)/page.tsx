@@ -87,7 +87,7 @@ export default function DashboardPage() {
           </h1>
         </div>
         <button onClick={() => router.push('/time')}
-          className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 shadow-soft">
+          className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-md active:scale-[0.98] text-sm font-medium hover:bg-amber-600 shadow-soft">
           <Plus size={15} />{es ? 'Cargar horas' : 'Log time'}
         </button>
       </div>
@@ -98,12 +98,12 @@ export default function DashboardPage() {
           const Icon = stat.icon
           return (
             <div key={stat.label} onClick={() => router.push(stat.href)}
-              className="group surface-card rounded-lg p-5 hover:border-canvas-300 hover:shadow-soft cursor-pointer transition-all">
-              <div className={`w-9 h-9 rounded-md bg-gradient-to-br ${stat.tint} flex items-center justify-center mb-4 shadow-soft`}>
+              className="group surface-card rounded-lg p-5 hover:-translate-y-0.5 hover:shadow-soft-md hover:border-amber-500/30 cursor-pointer transition-all duration-200">
+              <div className={`w-9 h-9 rounded-md bg-gradient-to-br ${stat.tint} flex items-center justify-center mb-4 shadow-soft ring-1 ring-amber-400/0 group-hover:ring-amber-400/50 transition-all`}>
                 <Icon size={16} className="text-white" strokeWidth={2} />
               </div>
-              <p className="font-display text-2xl sm:text-[28px] text-ink-900 tracking-tight leading-none">{stat.value}</p>
-              <p className="text-[11px] uppercase tracking-[0.14em] text-ink-500 mt-2.5 font-medium">{stat.label}</p>
+              <p className="font-display text-2xl sm:text-[30px] text-ink-900 tracking-tight leading-none tabular-nums">{stat.value}</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-ink-500 mt-3 font-semibold">{stat.label}</p>
             </div>
           )
         })}

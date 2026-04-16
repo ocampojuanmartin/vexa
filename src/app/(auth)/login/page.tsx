@@ -45,7 +45,7 @@ export default function LoginPage() {
           </div>
           {error && <p className="text-sm text-red-800 bg-red-50 border border-red-100 px-4 py-2.5 rounded-md">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full py-3 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 disabled:opacity-50 shadow-soft">
+            className="w-full py-3 bg-amber-500 text-white rounded-md active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50 shadow-soft">
             {loading ? '...' : t('auth.login')}
           </button>
         </form>

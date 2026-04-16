@@ -83,7 +83,7 @@ export default function SettingsPage() {
             <h2 className="text-lg font-medium text-ink-900">{L.catTitle}</h2>
             <p className="text-sm text-ink-500 mt-1 max-w-xl">{L.catDesc}</p>
           </div>
-          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600">
             <Plus size={16} />{L.new}
           </button>
         </div>
@@ -169,7 +169,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>

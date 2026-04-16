@@ -214,7 +214,7 @@ export default function ClientsPage(){
     <div>
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl text-ink-900 tracking-tight">{L.title}</h1>
-        {canEdit&&<button onClick={openCreateClient} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700"><Plus size={16}/>{L.newClient}</button>}
+        {canEdit&&<button onClick={openCreateClient} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600"><Plus size={16}/>{L.newClient}</button>}
       </div>
       {clients.length>0&&(<div className="mt-4 relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"/><input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-canvas-200 rounded-lg text-sm"/></div>)}
       {loading?<div className="mt-8 text-center text-sm text-ink-500">Loading...</div>
@@ -266,7 +266,7 @@ export default function ClientsPage(){
               <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.notes}</label><textarea value={clientForm.notes} onChange={e=>setClientForm({...clientForm,notes:e.target.value})} rows={2} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm resize-none"/></div>
               {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
-            <div className="flex justify-end gap-3 mt-6"><button onClick={()=>setShowClientModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button><button onClick={saveClient} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button></div>
+            <div className="flex justify-end gap-3 mt-6"><button onClick={()=>setShowClientModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button><button onClick={saveClient} disabled={saving} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{saving?'...':L.save}</button></div>
           </div></div>)}
 
       {/* MATTER MODAL */}
@@ -335,7 +335,7 @@ export default function ClientsPage(){
 
               {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
-            <div className="flex justify-end gap-3 mt-6"><button onClick={()=>setShowMatterModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button><button onClick={saveMatter} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button></div>
+            <div className="flex justify-end gap-3 mt-6"><button onClick={()=>setShowMatterModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button><button onClick={saveMatter} disabled={saving} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{saving?'...':L.save}</button></div>
           </div></div>)}
     </div>
   )
