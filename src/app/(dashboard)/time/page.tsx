@@ -206,41 +206,41 @@ export default function TimePage(){
     <div className="flex gap-6 flex-wrap lg:flex-nowrap">
       {/* LEFT PANEL */}
       <div className="w-full lg:w-64 flex-shrink-0 space-y-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-3 text-sm">
-          <p className="font-medium text-gray-700">{es?'Período activo':'Active period'}: {MONTHS[month]}-{year}</p>
-          <p className="text-gray-400 text-xs mt-1">{es?'Desde':'From'} {fmtDate(year,month,1)}</p>
-          <p className="text-gray-400 text-xs">{es?'Hasta':'To'} {fmtDate(year,month,days)}</p>
+        <div className="bg-white rounded-xl border border-canvas-200 p-3 text-sm">
+          <p className="font-medium text-ink-700">{es?'Período activo':'Active period'}: {MONTHS[month]}-{year}</p>
+          <p className="text-ink-500 text-xs mt-1">{es?'Desde':'From'} {fmtDate(year,month,1)}</p>
+          <p className="text-ink-500 text-xs">{es?'Hasta':'To'} {fmtDate(year,month,days)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
+        <div className="bg-white rounded-xl border border-canvas-200 p-3">
           <div className="flex items-center justify-between mb-2">
-            <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded"><ChevronLeft size={16}/></button>
+            <button onClick={prevMonth} className="p-1 hover:bg-canvas-100 rounded"><ChevronLeft size={16}/></button>
             <span className="text-sm font-medium">{MONTHS[month]} {year}</span>
-            <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded"><ChevronRight size={16}/></button>
+            <button onClick={nextMonth} className="p-1 hover:bg-canvas-100 rounded"><ChevronRight size={16}/></button>
           </div>
           <div className="grid grid-cols-7 text-center text-xs">
-            {DAYS.map(d=><div key={d} className="py-1 text-gray-400 font-medium">{d}</div>)}
+            {DAYS.map(d=><div key={d} className="py-1 text-ink-500 font-medium">{d}</div>)}
             {calDays.map((d,i)=>{
               if(!d)return <div key={`e${i}`}/>
               const hrs=getDayHours(d);const sel=d===selDay;const today=isToday(d)
-              return(<button key={d} onClick={()=>setSelDay(d)} className={`py-1.5 text-xs rounded-md transition-colors relative ${sel?'bg-vexa-500 text-white':today?'bg-vexa-50 text-vexa-700 font-bold':'hover:bg-gray-100 text-gray-700'}`}>{d}{hrs>0&&!sel&&<span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-vexa-400"></span>}</button>)
+              return(<button key={d} onClick={()=>setSelDay(d)} className={`py-1.5 text-xs rounded-md transition-colors relative ${sel?'bg-vexa-600 text-white':today?'bg-vexa-50 text-vexa-700 font-bold':'hover:bg-canvas-100 text-ink-700'}`}>{d}{hrs>0&&!sel&&<span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-vexa-400"></span>}</button>)
             })}
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 text-xs space-y-1">
-          <div className="flex justify-between"><span className="text-gray-500">{L.totalNB}</span><span className="font-medium">{hrsToHM(dayNonBill)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">{L.totalB}</span><span className="font-medium">{hrsToHM(dayBillable)}</span></div>
-          <div className="flex justify-between border-t pt-1 border-gray-100"><span className="font-medium text-gray-700">{L.totalDay}</span><span className="font-bold">{hrsToHM(dayTotal)}</span></div>
+        <div className="bg-white rounded-xl border border-canvas-200 p-3 text-xs space-y-1">
+          <div className="flex justify-between"><span className="text-ink-500">{L.totalNB}</span><span className="font-medium">{hrsToHM(dayNonBill)}</span></div>
+          <div className="flex justify-between"><span className="text-ink-500">{L.totalB}</span><span className="font-medium">{hrsToHM(dayBillable)}</span></div>
+          <div className="flex justify-between border-t pt-1 border-canvas-100"><span className="font-medium text-ink-700">{L.totalDay}</span><span className="font-bold">{hrsToHM(dayTotal)}</span></div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3 text-xs space-y-1">
-          <div className="flex justify-between"><span className="text-gray-500">{L.periodNB}</span><span className="font-medium">{hrsToHM(monthTotal-monthBillable)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">{L.periodB}</span><span className="font-medium">{hrsToHM(monthBillable)}</span></div>
-          <div className="flex justify-between border-t pt-1 border-gray-100"><span className="font-medium text-gray-700">{L.periodTotal}</span><span className="font-bold">{hrsToHM(monthTotal)}</span></div>
+        <div className="bg-white rounded-xl border border-canvas-200 p-3 text-xs space-y-1">
+          <div className="flex justify-between"><span className="text-ink-500">{L.periodNB}</span><span className="font-medium">{hrsToHM(monthTotal-monthBillable)}</span></div>
+          <div className="flex justify-between"><span className="text-ink-500">{L.periodB}</span><span className="font-medium">{hrsToHM(monthBillable)}</span></div>
+          <div className="flex justify-between border-t pt-1 border-canvas-100"><span className="font-medium text-ink-700">{L.periodTotal}</span><span className="font-bold">{hrsToHM(monthTotal)}</span></div>
         </div>
       </div>
 
       {/* RIGHT PANEL */}
       <div className="flex-1 min-w-0 space-y-4">
-        <p className="text-sm text-gray-500 font-medium">{L.editDay}</p>
+        <p className="text-sm text-ink-500 font-medium">{L.editDay}</p>
 
         {/* Pending shared entries */}
         {pendingShared.length>0&&(
@@ -249,8 +249,8 @@ export default function TimePage(){
             {pendingShared.map(s=>(
               <div key={s.id} className="flex items-center justify-between py-2 border-b border-amber-100 last:border-0">
                 <div>
-                  <p className="text-sm text-gray-900">{s.matters?.title} — {hrsToHM(s.hours_logged)}</p>
-                  <p className="text-xs text-gray-500">{s.users?.full_name}: {s.description}</p>
+                  <p className="text-sm text-ink-900">{s.matters?.title} — {hrsToHM(s.hours_logged)}</p>
+                  <p className="text-xs text-ink-500">{s.users?.full_name}: {s.description}</p>
                 </div>
                 <div className="flex gap-1">
                   <button onClick={()=>handleSharedAction(s.id,true)} className="p-1.5 bg-green-600 text-white rounded-lg"><Check size={14}/></button>
@@ -262,42 +262,42 @@ export default function TimePage(){
         )}
 
         {/* Entry form */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="bg-white rounded-xl border border-canvas-200 p-4">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4">
             <div className="space-y-3">
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.client}</label>
-                <select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.selectClient}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.matter} {selectedMatter&&<span className="ml-1">{langFlags[mLang]||'🇪🇸'}</span>}</label>
-                <select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.selectMatter}</option>{filteredMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
+              <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.client}</label>
+                <select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white"><option value="">{L.selectClient}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+              <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.matter} {selectedMatter&&<span className="ml-1">{langFlags[mLang]||'🇪🇸'}</span>}</label>
+                <select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white"><option value="">{L.selectMatter}</option>{filteredMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
               {/* Admin: matter reassign when editing */}
               {editing&&isAdmin&&(
-                <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.reassignMatter}</label>
-                  <select value={editMatter} onChange={e=>setEditMatter(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">{matters.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></div>
+                <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.reassignMatter}</label>
+                  <select value={editMatter} onChange={e=>setEditMatter(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white">{matters.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></div>
               )}
               <div className="flex gap-3">
-                <div className="flex-1"><label className="block text-xs font-medium text-gray-600 mb-1">{L.hours}</label><input type="number" min="0" max="24" value={formHrs} onChange={e=>setFormHrs(parseInt(e.target.value)||0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
-                <div className="flex-1"><label className="block text-xs font-medium text-gray-600 mb-1">{L.mins}</label><input type="number" min="0" max="59" value={formMins} onChange={e=>setFormMins(parseInt(e.target.value)||0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+                <div className="flex-1"><label className="block text-xs font-medium text-ink-700 mb-1">{L.hours}</label><input type="number" min="0" max="24" value={formHrs} onChange={e=>setFormHrs(parseInt(e.target.value)||0)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
+                <div className="flex-1"><label className="block text-xs font-medium text-ink-700 mb-1">{L.mins}</label><input type="number" min="0" max="59" value={formMins} onChange={e=>setFormMins(parseInt(e.target.value)||0)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
               </div>
               {/* Authorization */}
               {selectedMatter?.requires_authorization&&(
-                <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.authBy} *</label><input type="text" value={formAuth} onChange={e=>setFormAuth(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder={es?'Nombre de quien autorizó':'Name of authorizer'}/></div>
+                <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.authBy} *</label><input type="text" value={formAuth} onChange={e=>setFormAuth(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder={es?'Nombre de quien autorizó':'Name of authorizer'}/></div>
               )}
               {/* Share with */}
               {!editing&&(
-                <div><label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1"><UserPlus size={13}/>{L.shareWith}</label>
-                  <select value={formShareWith} onChange={e=>setFormShareWith(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.selectUser}</option>{allUsers.filter(u=>u.id!==userId).map(u=><option key={u.id} value={u.id}>{u.full_name}</option>)}</select></div>
+                <div><label className="block text-xs font-medium text-ink-700 mb-1 flex items-center gap-1"><UserPlus size={13}/>{L.shareWith}</label>
+                  <select value={formShareWith} onChange={e=>setFormShareWith(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white"><option value="">{L.selectUser}</option>{allUsers.filter(u=>u.id!==userId).map(u=><option key={u.id} value={u.id}>{u.full_name}</option>)}</select></div>
               )}
             </div>
             <div className="flex flex-col">
-              <label className="block text-xs font-medium text-gray-600 mb-1">{langFlags[mLang]||'🇪🇸'} {descLabel}</label>
-              <textarea value={formDesc} onChange={e=>setFormDesc(e.target.value.slice(0,1000))} className="flex-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none min-h-[120px]" placeholder={descPlaceholder}/>
-              <div className="text-right text-xs text-gray-400 mt-1">{formDesc.length}/1000</div>
+              <label className="block text-xs font-medium text-ink-700 mb-1">{langFlags[mLang]||'🇪🇸'} {descLabel}</label>
+              <textarea value={formDesc} onChange={e=>setFormDesc(e.target.value.slice(0,1000))} className="flex-1 w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm resize-none min-h-[120px]" placeholder={descPlaceholder}/>
+              <div className="text-right text-xs text-ink-500 mt-1">{formDesc.length}/1000</div>
             </div>
             <div className="flex flex-col justify-between">
               {error&&<p className="text-xs text-red-600 mb-2">{error}</p>}
               <div className="space-y-2">
-                <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2.5 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':editing?L.editing_:formShareWith?(es?'Enviar para aprobación':'Send for approval'):L.insert}</button>
-                {editing&&<button onClick={resetForm} className="w-full px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>}
+                <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':editing?L.editing_:formShareWith?(es?'Enviar para aprobación':'Send for approval'):L.insert}</button>
+                {editing&&<button onClick={resetForm} className="w-full px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>}
               </div>
             </div>
           </div>
@@ -305,27 +305,27 @@ export default function TimePage(){
 
         {/* Day entries list */}
         {entries.length>0&&(
-          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <div className="bg-white rounded-xl border border-canvas-200 overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-2 font-medium text-gray-600">{L.matter}</th>
-                {canSeeAll&&<th className="text-left px-4 py-2 font-medium text-gray-600">{es?'Abogado':'Lawyer'}</th>}
-                <th className="text-left px-4 py-2 font-medium text-gray-600">{es?'Descripción':'Description'}</th>
-                <th className="text-right px-4 py-2 font-medium text-gray-600">{L.hours}</th>
+              <thead><tr className="border-b border-canvas-100 bg-canvas-100">
+                <th className="text-left px-4 py-2 font-medium text-ink-700">{L.matter}</th>
+                {canSeeAll&&<th className="text-left px-4 py-2 font-medium text-ink-700">{es?'Abogado':'Lawyer'}</th>}
+                <th className="text-left px-4 py-2 font-medium text-ink-700">{es?'Descripción':'Description'}</th>
+                <th className="text-right px-4 py-2 font-medium text-ink-700">{L.hours}</th>
                 <th className="w-20"></th>
               </tr></thead>
               <tbody>
                 {entries.map(e=>(
-                  <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="px-4 py-2"><div className="font-medium text-gray-900 text-xs">{e.matters?.title}</div><div className="text-xs text-gray-400">{e.matters?.clients?.name}</div></td>
-                    {canSeeAll&&<td className="px-4 py-2 text-xs text-gray-600">{e.users?.full_name}</td>}
-                    <td className="px-4 py-2 text-xs text-gray-600 max-w-xs truncate">{e.description}{e.authorized_by&&<span className="ml-1 text-gray-400">[{e.authorized_by}]</span>}</td>
-                    <td className="px-4 py-2 text-right text-xs font-medium">{hrsToHM(e.hours_logged)}{!e.is_billable&&<span className="ml-1 text-gray-400">(NB)</span>}</td>
+                  <tr key={e.id} className="border-b border-canvas-100 hover:bg-canvas-100/60">
+                    <td className="px-4 py-2"><div className="font-medium text-ink-900 text-xs">{e.matters?.title}</div><div className="text-xs text-ink-500">{e.matters?.clients?.name}</div></td>
+                    {canSeeAll&&<td className="px-4 py-2 text-xs text-ink-700">{e.users?.full_name}</td>}
+                    <td className="px-4 py-2 text-xs text-ink-700 max-w-xs truncate">{e.description}{e.authorized_by&&<span className="ml-1 text-ink-500">[{e.authorized_by}]</span>}</td>
+                    <td className="px-4 py-2 text-right text-xs font-medium">{hrsToHM(e.hours_logged)}{!e.is_billable&&<span className="ml-1 text-ink-500">(NB)</span>}</td>
                     <td className="px-4 py-2">
-                      {e.is_locked?<Lock size={13} className="text-gray-300 mx-auto"/>:(
+                      {e.is_locked?<Lock size={13} className="text-ink-300 mx-auto"/>:(
                         <div className="flex gap-1 justify-end">
-                          <button onClick={()=>startEdit(e)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Pencil size={13}/></button>
-                          <button onClick={()=>handleDelete(e.id)} className="p-1 rounded hover:bg-gray-100 text-red-400"><Trash2 size={13}/></button>
+                          <button onClick={()=>startEdit(e)} className="p-1 rounded hover:bg-canvas-100 text-ink-500"><Pencil size={13}/></button>
+                          <button onClick={()=>handleDelete(e.id)} className="p-1 rounded hover:bg-canvas-100 text-red-400"><Trash2 size={13}/></button>
                         </div>
                       )}
                     </td>

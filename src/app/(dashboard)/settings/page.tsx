@@ -61,7 +61,7 @@ export default function SettingsPage() {
     loadData()
   }
 
-  if (!isAdmin) return <div className="text-center text-sm text-gray-500 mt-12">{es?'Sin acceso':'No access'}</div>
+  if (!isAdmin) return <div className="text-center text-sm text-ink-500 mt-12">{es?'Sin acceso':'No access'}</div>
 
   const L = {
     title: es?'Configuración':'Settings',
@@ -75,41 +75,41 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
+      <h1 className="font-display text-3xl text-ink-900 tracking-tight">{L.title}</h1>
 
       <div className="mt-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-medium text-gray-900">{L.catTitle}</h2>
-            <p className="text-sm text-gray-500 mt-1 max-w-xl">{L.catDesc}</p>
+            <h2 className="text-lg font-medium text-ink-900">{L.catTitle}</h2>
+            <p className="text-sm text-ink-500 mt-1 max-w-xl">{L.catDesc}</p>
           </div>
-          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">
             <Plus size={16} />{L.new}
           </button>
         </div>
 
         {loading ? (
-          <div className="mt-4 text-sm text-gray-500">Loading...</div>
+          <div className="mt-4 text-sm text-ink-500">Loading...</div>
         ) : categories.length === 0 ? (
-          <div className="mt-4 bg-white rounded-xl border border-gray-200 p-6 text-center text-sm text-gray-500">{L.noCategories}</div>
+          <div className="mt-4 bg-white rounded-xl border border-canvas-200 p-6 text-center text-sm text-ink-500">{L.noCategories}</div>
         ) : (
-          <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <div className="mt-4 bg-white rounded-xl border border-canvas-200 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{L.name}</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">{L.rate}</th>
+                <tr className="border-b border-canvas-100 bg-canvas-100">
+                  <th className="text-left px-4 py-3 font-medium text-ink-700">{L.name}</th>
+                  <th className="text-right px-4 py-3 font-medium text-ink-700">{L.rate}</th>
                   <th className="w-20"></th>
                 </tr>
               </thead>
               <tbody>
                 {categories.map(c => (
-                  <tr key={c.id} className="border-b border-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">${c.default_rate}</td>
+                  <tr key={c.id} className="border-b border-canvas-100">
+                    <td className="px-4 py-3 font-medium text-ink-900">{c.name}</td>
+                    <td className="px-4 py-3 text-right text-ink-700">${c.default_rate}</td>
                     <td className="px-4 py-3 flex gap-1 justify-end">
-                      <button onClick={()=>openEdit(c)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"><Pencil size={14}/></button>
-                      <button onClick={()=>deleteCategory(c.id)} className="p-1.5 rounded-md hover:bg-gray-100 text-red-400"><X size={14}/></button>
+                      <button onClick={()=>openEdit(c)} className="p-1.5 rounded-md hover:bg-canvas-100 text-ink-500"><Pencil size={14}/></button>
+                      <button onClick={()=>deleteCategory(c.id)} className="p-1.5 rounded-md hover:bg-canvas-100 text-red-400"><X size={14}/></button>
                     </td>
                   </tr>
                 ))}
@@ -122,26 +122,26 @@ export default function SettingsPage() {
       {/* DEMO REQUESTS */}
       {demoRequests.length > 0 && (
         <div className="mt-10">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">{es ? 'Solicitudes de demo' : 'Demo requests'}</h2>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <h2 className="text-lg font-medium text-ink-900 mb-4">{es ? 'Solicitudes de demo' : 'Demo requests'}</h2>
+          <div className="bg-white rounded-xl border border-canvas-200 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Nombre' : 'Name'}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Estudio' : 'Firm'}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Tamaño' : 'Size'}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{es ? 'Fecha' : 'Date'}</th>
+                <tr className="border-b border-canvas-100 bg-canvas-100">
+                  <th className="text-left px-4 py-3 font-medium text-ink-700">{es ? 'Nombre' : 'Name'}</th>
+                  <th className="text-left px-4 py-3 font-medium text-ink-700">Email</th>
+                  <th className="text-left px-4 py-3 font-medium text-ink-700">{es ? 'Estudio' : 'Firm'}</th>
+                  <th className="text-left px-4 py-3 font-medium text-ink-700">{es ? 'Tamaño' : 'Size'}</th>
+                  <th className="text-left px-4 py-3 font-medium text-ink-700">{es ? 'Fecha' : 'Date'}</th>
                 </tr>
               </thead>
               <tbody>
                 {demoRequests.map(d => (
-                  <tr key={d.id} className="border-b border-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">{d.full_name}</td>
-                    <td className="px-4 py-3 text-gray-600">{d.email}</td>
-                    <td className="px-4 py-3 text-gray-600">{d.firm_name}</td>
-                    <td className="px-4 py-3 text-gray-600">{d.firm_size}</td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{new Date(d.created_at).toLocaleDateString()}</td>
+                  <tr key={d.id} className="border-b border-canvas-100">
+                    <td className="px-4 py-3 font-medium text-ink-900">{d.full_name}</td>
+                    <td className="px-4 py-3 text-ink-700">{d.email}</td>
+                    <td className="px-4 py-3 text-ink-700">{d.firm_name}</td>
+                    <td className="px-4 py-3 text-ink-700">{d.firm_size}</td>
+                    <td className="px-4 py-3 text-ink-500 text-xs">{new Date(d.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -156,20 +156,20 @@ export default function SettingsPage() {
             <h2 className="text-lg font-semibold mb-4">{editing ? L.edit : L.new}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{L.name} *</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1">{L.name} *</label>
                 <input type="text" value={formName} onChange={e=>setFormName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder={es?'Ej: Socio Senior':'E.g. Senior Partner'} />
+                  className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder={es?'Ej: Socio Senior':'E.g. Senior Partner'} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{L.rate}</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1">{L.rate}</label>
                 <input type="number" step="1" value={formRate} onChange={e=>setFormRate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0" />
+                  className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder="0" />
               </div>
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>

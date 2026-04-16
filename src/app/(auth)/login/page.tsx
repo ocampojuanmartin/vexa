@@ -26,33 +26,34 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-semibold text-vexa-600 tracking-[4px]">vexa</h1>
-        <p className="text-sm text-gray-400 mt-2">{t('auth.tagline')}</p>
+        <h1 className="wordmark text-5xl text-vexa-600">vexa</h1>
+        <p className="text-[13px] text-ink-500 mt-3 italic font-display">{t('auth.tagline')}</p>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-200/80 p-8 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">{t('auth.signInWith')}</h2>
+      <div className="surface-card rounded-lg p-8 shadow-soft-md">
+        <h2 className="font-display text-xl text-ink-900 mb-6 tracking-tight">{t('auth.signInWith')}</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">{t('auth.email')}</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white" placeholder="nombre@estudio.com" />
+            <label htmlFor="login-email" className="block text-[11px] uppercase tracking-[0.14em] font-medium text-ink-500 mb-1.5">{t('auth.email')}</label>
+            <input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required
+              className="w-full px-4 py-2.5 border border-canvas-200 rounded-md text-sm bg-canvas-50/60 focus:bg-white transition-colors"
+              placeholder="nombre@estudio.com" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">{t('auth.password')}</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white" />
+            <label htmlFor="login-password" className="block text-[11px] uppercase tracking-[0.14em] font-medium text-ink-500 mb-1.5">{t('auth.password')}</label>
+            <input id="login-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required
+              className="w-full px-4 py-2.5 border border-canvas-200 rounded-md text-sm bg-canvas-50/60 focus:bg-white transition-colors" />
           </div>
-          {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{error}</p>}
+          {error && <p className="text-sm text-red-800 bg-red-50 border border-red-100 px-4 py-2.5 rounded-md">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full py-3 bg-vexa-500 text-white rounded-xl text-sm font-semibold hover:bg-vexa-600 disabled:opacity-50 transition-colors shadow-sm shadow-vexa-500/20">
+            className="w-full py-3 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 disabled:opacity-50 shadow-soft">
             {loading ? '...' : t('auth.login')}
           </button>
         </form>
-        <div className="mt-5 text-center">
-          <Link href="/reset-password" className="text-sm text-gray-400 hover:text-vexa-600 transition-colors">{t('auth.forgotPassword')}</Link>
+        <div className="mt-6 text-center">
+          <Link href="/reset-password" className="text-xs text-ink-500 hover:text-vexa-600 transition-colors">{t('auth.forgotPassword')}</Link>
         </div>
       </div>
-      <p className="text-center text-sm text-gray-400 mt-6">
+      <p className="text-center text-xs text-ink-500 mt-6">
         {t('auth.noAccount')}{' '}
         <Link href="/register" className="text-vexa-600 hover:text-vexa-700 font-medium">{t('auth.register')}</Link>
       </p>

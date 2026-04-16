@@ -204,7 +204,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de �
   }
 
   const statusLabel=(s:string)=>(es?{draft:'Borrador',issued:'Emitido',sent:'Enviado',approved:'Aprobado',invoice_issued:'Factura emitida',paid:'Pagado',unpaid:'Impago'}:{draft:'Draft',issued:'Issued',sent:'Sent',approved:'Approved',invoice_issued:'Invoice issued',paid:'Paid',unpaid:'Unpaid'})[s]||s
-  const statusColor=(s:string)=>({draft:'bg-gray-100 text-gray-600',issued:'bg-indigo-50 text-indigo-700',sent:'bg-blue-50 text-blue-700',approved:'bg-purple-50 text-purple-700',invoice_issued:'bg-amber-50 text-amber-700',paid:'bg-green-50 text-green-700',unpaid:'bg-red-50 text-red-700'})[s]||'bg-gray-100 text-gray-600'
+  const statusColor=(s:string)=>({draft:'bg-canvas-100 text-ink-700',issued:'bg-indigo-50 text-indigo-700',sent:'bg-blue-50 text-blue-700',approved:'bg-purple-50 text-purple-700',invoice_issued:'bg-amber-50 text-amber-700',paid:'bg-green-50 text-green-700',unpaid:'bg-red-50 text-red-700'})[s]||'bg-canvas-100 text-ink-700'
   const nextStatus=(s:string):string|null=>({draft:'issued',issued:'sent',sent:'approved',approved:'invoice_issued',invoice_issued:'paid',unpaid:'paid'})[s]||null
 
   const filtered=timesheets.filter(t=>{
@@ -247,36 +247,36 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de �
     const canDownloadFinal=detail.status==='issued'||detail.status==='sent'||detail.status==='approved'||detail.status==='invoice_issued'||detail.status==='paid'
     return(<div>
       <button onClick={()=>setDetail(null)} className="flex items-center gap-1 text-sm text-vexa-500 hover:text-vexa-600 mb-4"><ArrowLeft size={14}/>{L.timesheets}</button>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg space-y-4">
-        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">{detail.matters?.title}</h2><span className="text-sm font-mono text-gray-400">{detail.code}</span></div>
-        <p className="text-sm text-gray-500">{detail.matters?.clients?.name}</p>
+      <div className="bg-white rounded-xl border border-canvas-200 p-6 max-w-lg space-y-4">
+        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">{detail.matters?.title}</h2><span className="text-sm font-mono text-ink-500">{detail.code}</span></div>
+        <p className="text-sm text-ink-500">{detail.matters?.clients?.name}</p>
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-gray-500">{L.period}:</span> <span className="font-medium">{detail.period_start} → {detail.period_end}</span></div>
-          <div><span className="text-gray-500">{L.status}:</span> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(detail.status)}`}>{statusLabel(detail.status)}</span></div>
-          <div><span className="text-gray-500">{L.totalHrs}:</span> <span className="font-medium">{hrsToHM(detail.total_billed_hours||0)}</span></div>
-          <div><span className="text-gray-500">{L.totalAmt}:</span> <span className="font-medium">{detail.total_billed_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-          <div><span className="text-gray-500">{L.totalExp}:</span> <span className="font-medium">{detail.total_expenses?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-          {detail.discount_amount>0&&<div><span className="text-red-600">{L.discountLabel}:</span> <span className="font-medium text-red-600">-{detail.discount_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span>{detail.discount_description&&<span className="text-xs text-gray-400 ml-1">({detail.discount_description})</span>}</div>}
-          {detail.success_fee>0&&<div><span className="text-green-600">{L.successFeeLabel}:</span> <span className="font-medium text-green-600">+{detail.success_fee?.toLocaleString(undefined,{minimumFractionDigits:2})}</span>{detail.success_fee_description&&<span className="text-xs text-gray-400 ml-1">({detail.success_fee_description})</span>}</div>}
-          <div className="col-span-2 border-t pt-2 border-gray-100"><span className="font-semibold">{L.grand}:</span> <span className="font-semibold text-lg">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div><span className="text-ink-500">{L.period}:</span> <span className="font-medium">{detail.period_start} → {detail.period_end}</span></div>
+          <div><span className="text-ink-500">{L.status}:</span> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(detail.status)}`}>{statusLabel(detail.status)}</span></div>
+          <div><span className="text-ink-500">{L.totalHrs}:</span> <span className="font-medium">{hrsToHM(detail.total_billed_hours||0)}</span></div>
+          <div><span className="text-ink-500">{L.totalAmt}:</span> <span className="font-medium">{detail.total_billed_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div><span className="text-ink-500">{L.totalExp}:</span> <span className="font-medium">{detail.total_expenses?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          {detail.discount_amount>0&&<div><span className="text-red-600">{L.discountLabel}:</span> <span className="font-medium text-red-600">-{detail.discount_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span>{detail.discount_description&&<span className="text-xs text-ink-500 ml-1">({detail.discount_description})</span>}</div>}
+          {detail.success_fee>0&&<div><span className="text-green-600">{L.successFeeLabel}:</span> <span className="font-medium text-green-600">+{detail.success_fee?.toLocaleString(undefined,{minimumFractionDigits:2})}</span>{detail.success_fee_description&&<span className="text-xs text-ink-500 ml-1">({detail.success_fee_description})</span>}</div>}
+          <div className="col-span-2 border-t pt-2 border-canvas-100"><span className="font-semibold">{L.grand}:</span> <span className="font-semibold text-lg">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </div>
-        {detail.payment_date&&<div className="text-sm border-t pt-3 border-gray-100"><span className="text-gray-500">{L.payDate}:</span> {detail.payment_date} {detail.payment_method&&`(${detail.payment_method})`} {detail.payment_currency||''} {detail.payment_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</div>}
+        {detail.payment_date&&<div className="text-sm border-t pt-3 border-canvas-100"><span className="text-ink-500">{L.payDate}:</span> {detail.payment_date} {detail.payment_method&&`(${detail.payment_method})`} {detail.payment_currency||''} {detail.payment_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</div>}
         
         {/* PDF downloads */}
         <div className="flex gap-2 flex-wrap">
-          {canDownloadDraft&&<button onClick={()=>downloadPDF(detail,true)} className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"><Download size={14}/>{L.downloadDraft}</button>}
-          {canDownloadFinal&&<button onClick={()=>downloadPDF(detail,false)} className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"><Download size={14}/>{L.downloadFinal}</button>}
+          {canDownloadDraft&&<button onClick={()=>downloadPDF(detail,true)} className="flex items-center gap-1.5 px-3 py-2 border border-canvas-200 rounded-lg text-sm text-ink-700 hover:bg-canvas-100"><Download size={14}/>{L.downloadDraft}</button>}
+          {canDownloadFinal&&<button onClick={()=>downloadPDF(detail,false)} className="flex items-center gap-1.5 px-3 py-2 border border-canvas-200 rounded-lg text-sm text-ink-700 hover:bg-canvas-100"><Download size={14}/>{L.downloadFinal}</button>}
         </div>
 
-        {next&&(<div className="border-t pt-4 border-gray-100 space-y-3">
+        {next&&(<div className="border-t pt-4 border-canvas-100 space-y-3">
           {next==='paid'&&(<div className="grid grid-cols-4 gap-2">
-            <input type="date" value={payDate} onChange={e=>setPayDate(e.target.value)} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
-            <input type="text" value={payMethod} onChange={e=>setPayMethod(e.target.value)} placeholder={L.payMethod} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
-            <select value={payCurrency} onChange={e=>setPayCurrency(e.target.value)} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white"><option value="ARS">ARS</option><option value="USD">USD</option><option value="EUR">EUR</option></select>
-            <input type="number" value={payAmount} onChange={e=>setPayAmount(e.target.value)} placeholder={L.payAmt} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
+            <input type="date" value={payDate} onChange={e=>setPayDate(e.target.value)} className="px-2 py-1.5 border border-canvas-200 rounded-lg text-sm"/>
+            <input type="text" value={payMethod} onChange={e=>setPayMethod(e.target.value)} placeholder={L.payMethod} className="px-2 py-1.5 border border-canvas-200 rounded-lg text-sm"/>
+            <select value={payCurrency} onChange={e=>setPayCurrency(e.target.value)} className="px-2 py-1.5 border border-canvas-200 rounded-lg text-sm bg-white"><option value="ARS">ARS</option><option value="USD">USD</option><option value="EUR">EUR</option></select>
+            <input type="number" value={payAmount} onChange={e=>setPayAmount(e.target.value)} placeholder={L.payAmt} className="px-2 py-1.5 border border-canvas-200 rounded-lg text-sm"/>
           </div>)}
           <div className="flex gap-2">
-            <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
+            <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
             {detail.status==='invoice_issued'&&<button onClick={()=>advanceStatus(detail,'unpaid')} disabled={statusSaving} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">{L.markUnpaid}</button>}
           </div>
         </div>)}
@@ -287,83 +287,83 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de �
   // CREATE TAB
   if(tab==='create'){
     if(step==='select'){return(<div>
-      <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
-        <button onClick={()=>setTab('view')} className="pb-3 text-sm text-gray-500 hover:text-gray-700">{L.view}</button>
+      <div className="flex items-center gap-4 border-b border-canvas-200 mb-6">
+        <button onClick={()=>setTab('view')} className="pb-3 text-sm text-ink-500 hover:text-ink-700">{L.view}</button>
         <button className="pb-3 text-sm font-medium text-vexa-600 border-b-2 border-vexa-500">{L.create}</button>
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 max-w-lg">
-        <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.client}</label><select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.allClients}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-        <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label><select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.select}</option>{clientMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
+      <div className="bg-white rounded-xl border border-canvas-200 p-6 space-y-4 max-w-lg">
+        <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.client}</label><select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white"><option value="">{L.allClients}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+        <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.matter} *</label><select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white"><option value="">{L.select}</option>{clientMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
         <div className="grid grid-cols-2 gap-4">
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.from}</label><input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.to}</label><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+          <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.from}</label><input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
+          <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.to}</label><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
         </div>
         {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-        <button onClick={loadForReview} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.pull}</button>
+        <button onClick={loadForReview} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">{L.pull}</button>
       </div>
     </div>)}
 
     if(step==='review'){
       const matterCurrency=matters.find(m=>m.id===selMatter)?.rate_currency||'USD'
       return(<div>
-        <div className="flex items-center justify-between mb-4"><div><h2 className="text-xl font-semibold">{L.review}</h2><p className="text-sm text-gray-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo} ({matterCurrency})</p></div><button onClick={()=>setStep('select')} className="text-sm text-gray-500 hover:text-gray-700">{L.cancel}</button></div>
-        {reviewEntries.length===0&&successFee===0?<div className="bg-white rounded-xl border border-gray-200 p-6 text-center text-sm text-gray-500">{L.noEntries}</div>:(<>
-          {reviewEntries.length>0&&(<div className="bg-white rounded-xl border border-gray-200 overflow-x-auto"><table className="w-full text-sm">
-            <thead><tr className="border-b border-gray-100 bg-gray-50"><th className="text-left px-3 py-2 font-medium text-gray-600">{L.lawyer}</th><th className="text-left px-3 py-2 font-medium text-gray-600">{L.desc}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.logged}</th><th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.billed}</th><th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.rate} ({matterCurrency})</th><th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.subtotal}</th></tr></thead>
-            <tbody>{reviewEntries.map((e,i)=>(<tr key={e.id} className="border-b border-gray-50">
-              <td className="px-3 py-2 text-gray-600">{e.users?.full_name}</td>
-              <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{e.entry_date} — {e.description}{e.authorized_by&&<span className="text-gray-400 ml-1">[{e.authorized_by}]</span>}</td>
-              <td className="px-3 py-2 text-right text-gray-400">{hrsToHM(e.hours_logged)}</td>
-              <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="0.25" value={itemEdits[i]?.hours_billed??0} onChange={ev=>updateItem(i,'hours',ev.target.value)} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right"/></td>
-              <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="1" value={itemEdits[i]?.rate??0} onChange={ev=>updateItem(i,'rate',ev.target.value)} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right"/></td>
+        <div className="flex items-center justify-between mb-4"><div><h2 className="font-display text-xl tracking-tight">{L.review}</h2><p className="text-sm text-ink-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo} ({matterCurrency})</p></div><button onClick={()=>setStep('select')} className="text-sm text-ink-500 hover:text-ink-700">{L.cancel}</button></div>
+        {reviewEntries.length===0&&successFee===0?<div className="bg-white rounded-xl border border-canvas-200 p-6 text-center text-sm text-ink-500">{L.noEntries}</div>:(<>
+          {reviewEntries.length>0&&(<div className="bg-white rounded-xl border border-canvas-200 overflow-x-auto"><table className="w-full text-sm">
+            <thead><tr className="border-b border-canvas-100 bg-canvas-100"><th className="text-left px-3 py-2 font-medium text-ink-700">{L.lawyer}</th><th className="text-left px-3 py-2 font-medium text-ink-700">{L.desc}</th><th className="text-right px-3 py-2 font-medium text-ink-700">{L.logged}</th><th className="text-right px-3 py-2 font-medium text-ink-700 bg-vexa-50">{L.billed}</th><th className="text-right px-3 py-2 font-medium text-ink-700 bg-vexa-50">{L.rate} ({matterCurrency})</th><th className="text-right px-3 py-2 font-medium text-ink-700 bg-vexa-50">{L.subtotal}</th></tr></thead>
+            <tbody>{reviewEntries.map((e,i)=>(<tr key={e.id} className="border-b border-canvas-100">
+              <td className="px-3 py-2 text-ink-700">{e.users?.full_name}</td>
+              <td className="px-3 py-2 text-ink-700 max-w-xs truncate">{e.entry_date} — {e.description}{e.authorized_by&&<span className="text-ink-500 ml-1">[{e.authorized_by}]</span>}</td>
+              <td className="px-3 py-2 text-right text-ink-500">{hrsToHM(e.hours_logged)}</td>
+              <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="0.25" value={itemEdits[i]?.hours_billed??0} onChange={ev=>updateItem(i,'hours',ev.target.value)} className="w-20 px-2 py-1 border border-canvas-200 rounded text-sm text-right"/></td>
+              <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="1" value={itemEdits[i]?.rate??0} onChange={ev=>updateItem(i,'rate',ev.target.value)} className="w-20 px-2 py-1 border border-canvas-200 rounded text-sm text-right"/></td>
               <td className="px-3 py-2 text-right font-medium bg-vexa-50/30">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
             </tr>))}</tbody></table></div>)}
-          {reviewExpenses.length>0&&(<div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto"><div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div><table className="w-full text-sm"><tbody>{reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50"><td className="px-4 py-2 text-gray-600">{e.expense_date}</td><td className="px-4 py-2 text-gray-600">{e.category}</td><td className="px-4 py-2 text-right font-medium">{e.currency!==matterCurrency?<span className="text-amber-600">{e.currency} </span>:''}{e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div>)}
+          {reviewExpenses.length>0&&(<div className="mt-4 bg-white rounded-xl border border-canvas-200 overflow-x-auto"><div className="px-4 py-3 bg-canvas-100 border-b border-canvas-100 font-medium text-sm text-ink-700">{L.expenses}</div><table className="w-full text-sm"><tbody>{reviewExpenses.map(e=><tr key={e.id} className="border-b border-canvas-100"><td className="px-4 py-2 text-ink-700">{e.expense_date}</td><td className="px-4 py-2 text-ink-700">{e.category}</td><td className="px-4 py-2 text-right font-medium">{e.currency!==matterCurrency?<span className="text-amber-600">{e.currency} </span>:''}{e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div>)}
           {/* Discount + Success Fee */}
-          <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+          <div className="mt-4 bg-white rounded-xl border border-canvas-200 p-4 space-y-3">
             <div className="grid grid-cols-2 gap-4">
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.discountLabel} ({matterCurrency})</label><input type="number" step="0.01" value={discount||''} onChange={e=>setDiscount(parseFloat(e.target.value)||0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0"/></div>
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.discountDescLabel}</label><input type="text" value={discountDesc} onChange={e=>setDiscountDesc(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+              <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.discountLabel} ({matterCurrency})</label><input type="number" step="0.01" value={discount||''} onChange={e=>setDiscount(parseFloat(e.target.value)||0)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder="0"/></div>
+              <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.discountDescLabel}</label><input type="text" value={discountDesc} onChange={e=>setDiscountDesc(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.successFeeLabel} ({matterCurrency})</label><input type="number" step="0.01" value={successFee||''} onChange={e=>setSuccessFee(parseFloat(e.target.value)||0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0"/></div>
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.successFeeDescLabel}</label><input type="text" value={successFeeDesc} onChange={e=>setSuccessFeeDesc(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+              <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.successFeeLabel} ({matterCurrency})</label><input type="number" step="0.01" value={successFee||''} onChange={e=>setSuccessFee(parseFloat(e.target.value)||0)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder="0"/></div>
+              <div><label className="block text-xs font-medium text-ink-700 mb-1">{L.successFeeDescLabel}</label><input type="text" value={successFeeDesc} onChange={e=>setSuccessFeeDesc(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
             </div>
           </div>
-          <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 space-y-2 max-w-sm ml-auto">
-            <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalHrs}</span><span className="font-medium">{hrsToHM(totalHrs)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalAmt}</span><span className="font-medium">{matterCurrency} {totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalExp}</span><span className="font-medium">{totalExp.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div className="mt-4 bg-white rounded-xl border border-canvas-200 p-4 space-y-2 max-w-sm ml-auto">
+            <div className="flex justify-between text-sm"><span className="text-ink-500">{L.totalHrs}</span><span className="font-medium">{hrsToHM(totalHrs)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-ink-500">{L.totalAmt}</span><span className="font-medium">{matterCurrency} {totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-ink-500">{L.totalExp}</span><span className="font-medium">{totalExp.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
             {discount>0&&<div className="flex justify-between text-sm"><span className="text-red-600">{L.discountLabel}</span><span className="font-medium text-red-600">-{matterCurrency} {discount.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
             {successFee>0&&<div className="flex justify-between text-sm"><span className="text-green-600">{L.successFeeLabel}</span><span className="font-medium text-green-600">+{matterCurrency} {successFee.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
-            <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+            <div className="flex justify-between text-sm border-t pt-2 border-canvas-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
           </div>
         </>)}
         {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-        <div className="mt-4 flex justify-end"><button onClick={()=>setStep('preview')} disabled={reviewEntries.length===0&&successFee===0} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{L.next} →</button></div>
+        <div className="mt-4 flex justify-end"><button onClick={()=>setStep('preview')} disabled={reviewEntries.length===0&&successFee===0} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{L.next} →</button></div>
       </div>)
     }
 
     if(step==='preview'){
       const matterCurrency=matters.find(m=>m.id===selMatter)?.rate_currency||'USD'
       return(<div>
-        <div className="flex items-center justify-between mb-4"><div><h2 className="text-xl font-semibold">{L.preview}</h2><p className="text-sm text-gray-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo}</p></div></div>
-        {reviewEntries.length>0&&(<div className="bg-white rounded-xl border border-gray-200 overflow-x-auto"><table className="w-full text-sm">
-          <thead><tr className="border-b border-gray-100 bg-gray-50"><th className="text-left px-3 py-2 font-medium text-gray-600">{L.lawyer}</th><th className="text-left px-3 py-2 font-medium text-gray-600">{L.desc}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.billed}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.rate}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.subtotal}</th></tr></thead>
-          <tbody>{reviewEntries.map((e,i)=>(<tr key={e.id} className="border-b border-gray-50"><td className="px-3 py-2 text-gray-600">{e.users?.full_name}</td><td className="px-3 py-2 text-gray-600 max-w-xs truncate">{e.entry_date} — {e.description}</td><td className="px-3 py-2 text-right font-medium">{hrsToHM(itemEdits[i]?.hours_billed||0)}</td><td className="px-3 py-2 text-right">{itemEdits[i]?.rate?.toLocaleString()}</td><td className="px-3 py-2 text-right font-medium">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>))}</tbody></table></div>)}
-        {reviewExpenses.length>0&&(<div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto"><div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div><table className="w-full text-sm"><tbody>{reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50"><td className="px-4 py-2 text-gray-600">{e.expense_date}</td><td className="px-4 py-2 text-gray-600">{e.category}</td><td className="px-4 py-2 text-right font-medium">{e.currency!==matterCurrency?<span className="text-amber-600">{e.currency} </span>:''}{e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div>)}
-        <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 space-y-2 max-w-sm ml-auto">
-          <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalHrs}</span><span className="font-medium">{hrsToHM(totalHrs)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalAmt}</span><span className="font-medium">{matterCurrency} {totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalExp}</span><span className="font-medium">{totalExp.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+        <div className="flex items-center justify-between mb-4"><div><h2 className="font-display text-xl tracking-tight">{L.preview}</h2><p className="text-sm text-ink-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo}</p></div></div>
+        {reviewEntries.length>0&&(<div className="bg-white rounded-xl border border-canvas-200 overflow-x-auto"><table className="w-full text-sm">
+          <thead><tr className="border-b border-canvas-100 bg-canvas-100"><th className="text-left px-3 py-2 font-medium text-ink-700">{L.lawyer}</th><th className="text-left px-3 py-2 font-medium text-ink-700">{L.desc}</th><th className="text-right px-3 py-2 font-medium text-ink-700">{L.billed}</th><th className="text-right px-3 py-2 font-medium text-ink-700">{L.rate}</th><th className="text-right px-3 py-2 font-medium text-ink-700">{L.subtotal}</th></tr></thead>
+          <tbody>{reviewEntries.map((e,i)=>(<tr key={e.id} className="border-b border-canvas-100"><td className="px-3 py-2 text-ink-700">{e.users?.full_name}</td><td className="px-3 py-2 text-ink-700 max-w-xs truncate">{e.entry_date} — {e.description}</td><td className="px-3 py-2 text-right font-medium">{hrsToHM(itemEdits[i]?.hours_billed||0)}</td><td className="px-3 py-2 text-right">{itemEdits[i]?.rate?.toLocaleString()}</td><td className="px-3 py-2 text-right font-medium">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>))}</tbody></table></div>)}
+        {reviewExpenses.length>0&&(<div className="mt-4 bg-white rounded-xl border border-canvas-200 overflow-x-auto"><div className="px-4 py-3 bg-canvas-100 border-b border-canvas-100 font-medium text-sm text-ink-700">{L.expenses}</div><table className="w-full text-sm"><tbody>{reviewExpenses.map(e=><tr key={e.id} className="border-b border-canvas-100"><td className="px-4 py-2 text-ink-700">{e.expense_date}</td><td className="px-4 py-2 text-ink-700">{e.category}</td><td className="px-4 py-2 text-right font-medium">{e.currency!==matterCurrency?<span className="text-amber-600">{e.currency} </span>:''}{e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div>)}
+        <div className="mt-4 bg-white rounded-xl border border-canvas-200 p-4 space-y-2 max-w-sm ml-auto">
+          <div className="flex justify-between text-sm"><span className="text-ink-500">{L.totalHrs}</span><span className="font-medium">{hrsToHM(totalHrs)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-ink-500">{L.totalAmt}</span><span className="font-medium">{matterCurrency} {totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-ink-500">{L.totalExp}</span><span className="font-medium">{totalExp.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
           {discount>0&&<div className="flex justify-between text-sm"><span className="text-red-600">{L.discountLabel}</span><span className="font-medium text-red-600">-{matterCurrency} {discount.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
           {successFee>0&&<div className="flex justify-between text-sm"><span className="text-green-600">{L.successFeeLabel}</span><span className="font-medium text-green-600">+{matterCurrency} {successFee.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
-          <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div className="flex justify-between text-sm border-t pt-2 border-canvas-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </div>
         {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
         <div className="mt-4 flex justify-between">
-          <button onClick={()=>setStep('review')} className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
-          <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
+          <button onClick={()=>setStep('review')} className="flex items-center gap-1 px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
+          <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
         </div>
       </div>)
     }
@@ -372,33 +372,33 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de �
   // VIEW TAB
   const ALL_STATUSES=['draft','issued','sent','approved','invoice_issued','paid','unpaid']
   return(<div>
-    <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
+    <div className="flex items-center gap-4 border-b border-canvas-200 mb-6">
       <button className="pb-3 text-sm font-medium text-vexa-600 border-b-2 border-vexa-500">{L.view}</button>
-      <button onClick={()=>{setTab('create');setStep('select');setSelClient('');setSelMatter('');setDateFrom('');setDateTo('');setError('');setDiscount(0);setDiscountDesc('');setSuccessFee(0);setSuccessFeeDesc('')}} className="pb-3 text-sm text-gray-500 hover:text-gray-700">{L.create}</button>
+      <button onClick={()=>{setTab('create');setStep('select');setSelClient('');setSelMatter('');setDateFrom('');setDateTo('');setError('');setDiscount(0);setDiscountDesc('');setSuccessFee(0);setSuccessFeeDesc('')}} className="pb-3 text-sm text-ink-500 hover:text-ink-700">{L.create}</button>
     </div>
     <div className="flex gap-3 flex-wrap">
-      <div className="relative flex-1 min-w-[200px]"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/><input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm"/></div>
-      <select value={filterClient} onChange={e=>setFilterClient(e.target.value)} className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.allClients}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
-      <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"><option value="all">{L.all}</option>{ALL_STATUSES.map(s=><option key={s} value={s}>{statusLabel(s)}</option>)}</select>
+      <div className="relative flex-1 min-w-[200px]"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"/><input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-canvas-200 rounded-lg text-sm"/></div>
+      <select value={filterClient} onChange={e=>setFilterClient(e.target.value)} className="px-3 py-2.5 border border-canvas-200 rounded-lg text-sm bg-white"><option value="">{L.allClients}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+      <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="px-3 py-2.5 border border-canvas-200 rounded-lg text-sm bg-white"><option value="all">{L.all}</option>{ALL_STATUSES.map(s=><option key={s} value={s}>{statusLabel(s)}</option>)}</select>
     </div>
-    {loading?<div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
-    :filtered.length===0?<div className="mt-12 text-center"><FileText size={28} className="text-gray-400 mx-auto mb-3"/><p className="text-gray-900 font-medium">{L.none}</p></div>
-    :(<div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto"><table className="w-full text-sm">
-      <thead><tr className="border-b border-gray-100 bg-gray-50">
-        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.code}</th>
-        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
-        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.period}</th>
-        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.status}</th>
-        <th className="text-right px-4 py-3 font-medium text-gray-600">{L.grand}</th>
+    {loading?<div className="mt-8 text-center text-sm text-ink-500">Loading...</div>
+    :filtered.length===0?<div className="mt-12 text-center"><FileText size={28} className="text-ink-500 mx-auto mb-3"/><p className="text-ink-900 font-medium">{L.none}</p></div>
+    :(<div className="mt-4 bg-white rounded-xl border border-canvas-200 overflow-x-auto"><table className="w-full text-sm">
+      <thead><tr className="border-b border-canvas-100 bg-canvas-100">
+        <th className="text-left px-4 py-3 font-medium text-ink-700">{L.code}</th>
+        <th className="text-left px-4 py-3 font-medium text-ink-700">{L.matter}</th>
+        <th className="text-left px-4 py-3 font-medium text-ink-700">{L.period}</th>
+        <th className="text-left px-4 py-3 font-medium text-ink-700">{L.status}</th>
+        <th className="text-right px-4 py-3 font-medium text-ink-700">{L.grand}</th>
         <th className="w-10"></th>
       </tr></thead>
-      <tbody>{filtered.map(t=>(<tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer" onClick={()=>setDetail(t)}>
-        <td className="px-4 py-3 font-mono text-sm text-gray-500">{t.code}</td>
-        <td className="px-4 py-3"><div className="font-medium text-gray-900">{t.matters?.title}</div><div className="text-xs text-gray-400">{t.matters?.clients?.name}</div></td>
-        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{t.period_start} → {t.period_end}</td>
+      <tbody>{filtered.map(t=>(<tr key={t.id} className="border-b border-canvas-100 hover:bg-canvas-100/60 cursor-pointer" onClick={()=>setDetail(t)}>
+        <td className="px-4 py-3 font-mono text-sm text-ink-500">{t.code}</td>
+        <td className="px-4 py-3"><div className="font-medium text-ink-900">{t.matters?.title}</div><div className="text-xs text-ink-500">{t.matters?.clients?.name}</div></td>
+        <td className="px-4 py-3 text-ink-700 whitespace-nowrap">{t.period_start} → {t.period_end}</td>
         <td className="px-4 py-3"><span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(t.status)}`}>{statusLabel(t.status)}</span></td>
-        <td className="px-4 py-3 text-right font-medium text-gray-900">{grandTotalForDetail(t).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
-        <td className="px-4 py-3"><ChevronRight size={16} className="text-gray-300"/></td>
+        <td className="px-4 py-3 text-right font-medium text-ink-900">{grandTotalForDetail(t).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+        <td className="px-4 py-3"><ChevronRight size={16} className="text-ink-300"/></td>
       </tr>))}</tbody>
     </table></div>)}
   </div>)

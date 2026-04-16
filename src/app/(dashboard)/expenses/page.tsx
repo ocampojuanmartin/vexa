@@ -106,48 +106,48 @@ export default function ExpensesPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600"><Plus size={16}/>{L.new}</button>
+        <h1 className="font-display text-3xl text-ink-900 tracking-tight">{L.title}</h1>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700"><Plus size={16}/>{L.new}</button>
       </div>
       {entries.length > 0 && (
         <div className="mt-4 relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
+          <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-canvas-200 rounded-lg text-sm" />
         </div>
       )}
-      {loading ? <div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
+      {loading ? <div className="mt-8 text-center text-sm text-ink-500">Loading...</div>
       : entries.length === 0 ? (
-        <div className="mt-12 text-center"><Receipt size={28} className="text-gray-400 mx-auto mb-3"/><p className="text-gray-900 font-medium">{L.none}</p></div>
+        <div className="mt-12 text-center"><Receipt size={28} className="text-ink-500 mx-auto mb-3"/><p className="text-ink-900 font-medium">{L.none}</p></div>
       ) : (
         <>
-          <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <div className="mt-4 bg-white rounded-xl border border-canvas-200 overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{L.date}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
-                {canSeeAll && <th className="text-left px-4 py-3 font-medium text-gray-600">{L.lawyer}</th>}
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{L.cat}</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">{L.amount}</th>
+              <thead><tr className="border-b border-canvas-100 bg-canvas-100">
+                <th className="text-left px-4 py-3 font-medium text-ink-700">{L.date}</th>
+                <th className="text-left px-4 py-3 font-medium text-ink-700">{L.matter}</th>
+                {canSeeAll && <th className="text-left px-4 py-3 font-medium text-ink-700">{L.lawyer}</th>}
+                <th className="text-left px-4 py-3 font-medium text-ink-700">{L.cat}</th>
+                <th className="text-right px-4 py-3 font-medium text-ink-700">{L.amount}</th>
                 <th className="w-20"></th>
               </tr></thead>
               <tbody>
                 {filtered.map(e => (
-                  <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{e.expense_date}</td>
-                    <td className="px-4 py-3"><div className="font-medium text-gray-900">{e.matters?.title}</div><div className="text-xs text-gray-400">{e.matters?.clients?.name}</div></td>
-                    {canSeeAll && <td className="px-4 py-3 text-gray-600">{e.users?.full_name}</td>}
-                    <td className="px-4 py-3 text-gray-600">{e.category}</td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-900">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+                  <tr key={e.id} className="border-b border-canvas-100 hover:bg-canvas-100/60">
+                    <td className="px-4 py-3 text-ink-700 whitespace-nowrap">{e.expense_date}</td>
+                    <td className="px-4 py-3"><div className="font-medium text-ink-900">{e.matters?.title}</div><div className="text-xs text-ink-500">{e.matters?.clients?.name}</div></td>
+                    {canSeeAll && <td className="px-4 py-3 text-ink-700">{e.users?.full_name}</td>}
+                    <td className="px-4 py-3 text-ink-700">{e.category}</td>
+                    <td className="px-4 py-3 text-right font-medium text-ink-900">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
                     <td className="px-4 py-3 flex gap-1 justify-end">
-                      {e.receipt_url && <a href={e.receipt_url} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-gray-100 text-gray-400"><ExternalLink size={14}/></a>}
-                      {e.is_locked ? <Lock size={14} className="text-gray-300"/> : <button onClick={()=>openEdit(e)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Pencil size={14}/></button>}
+                      {e.receipt_url && <a href={e.receipt_url} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-canvas-100 text-ink-500"><ExternalLink size={14}/></a>}
+                      {e.is_locked ? <Lock size={14} className="text-ink-300"/> : <button onClick={()=>openEdit(e)} className="p-1 rounded hover:bg-canvas-100 text-ink-500"><Pencil size={14}/></button>}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="mt-3 text-right text-sm text-gray-500">{L.total}: <span className="font-semibold text-gray-900">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div className="mt-3 text-right text-sm text-ink-500">{L.total}: <span className="font-semibold text-ink-900">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </>
       )}
       {showModal && (
@@ -155,30 +155,30 @@ export default function ExpensesPage() {
           <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">{editing?L.edit:L.new}</h2>
-              <button onClick={()=>setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-md"><X size={18} className="text-gray-400"/></button>
+              <button onClick={()=>setShowModal(false)} className="p-1 hover:bg-canvas-100 rounded-md"><X size={18} className="text-ink-500"/></button>
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.date}</label>
-                  <input type="date" value={form.expense_date} onChange={e=>setForm({...form,expense_date:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.cat}</label>
-                  <input type="text" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder={es?'Ej: Tasa judicial, peritaje, viáticos...':'E.g. Court fee, expert report, travel...'}/></div>
+                <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.date}</label>
+                  <input type="date" value={form.expense_date} onChange={e=>setForm({...form,expense_date:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
+                <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.cat}</label>
+                  <input type="text" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder={es?'Ej: Tasa judicial, peritaje, viáticos...':'E.g. Court fee, expert report, travel...'}/></div>
               </div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label>
-                <select value={form.matter_id} onChange={e=>setForm({...form,matter_id:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+              <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.matter} *</label>
+                <select value={form.matter_id} onChange={e=>setForm({...form,matter_id:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white">
                   <option value="">{L.select}</option>
                   {matters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.amount} *</label>
-                  <input type="number" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00"/></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.curr}</label>
-                  <select value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.amount} *</label>
+                  <input type="number" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" placeholder="0.00"/></div>
+                <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.curr}</label>
+                  <select value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white">
                     {CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{L.receipt}</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1">{L.receipt}</label>
                 <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+                  <label className="flex items-center gap-2 px-3 py-2 border border-canvas-200 rounded-lg text-sm text-ink-700 hover:bg-canvas-100 cursor-pointer">
                     <Paperclip size={14}/>
                     <span>{file ? file.name : L.attach}</span>
                     <input type="file" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={e=>setFile(e.target.files?.[0]||null)}/>
@@ -189,8 +189,8 @@ export default function ExpensesPage() {
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving||uploading} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving||uploading?'...':L.save}</button>
+              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>
+              <button onClick={handleSave} disabled={saving||uploading} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving||uploading?'...':L.save}</button>
             </div>
           </div>
         </div>
