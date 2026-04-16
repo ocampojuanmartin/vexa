@@ -360,6 +360,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de Ã
           {successFee>0&&<div className="flex justify-between text-sm"><span className="text-green-600">{L.successFeeLabel}</span><span className="font-medium text-green-600">+{matterCurrency} {successFee.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
           <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </div>
+        {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
         <div className="mt-4 flex justify-between">
           <button onClick={()=>setStep('review')} className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
           <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
