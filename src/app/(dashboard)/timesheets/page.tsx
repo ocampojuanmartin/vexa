@@ -276,7 +276,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de Ã
             <input type="number" value={payAmount} onChange={e=>setPayAmount(e.target.value)} placeholder={L.payAmt} className="px-2 py-1.5 border border-canvas-200 rounded-lg text-sm"/>
           </div>)}
           <div className="flex gap-2">
-            <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
+            <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
             {detail.status==='invoice_issued'&&<button onClick={()=>advanceStatus(detail,'unpaid')} disabled={statusSaving} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">{L.markUnpaid}</button>}
           </div>
         </div>)}
@@ -299,7 +299,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de Ã
           <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.to}</label><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
         </div>
         {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-        <button onClick={loadForReview} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600">{L.pull}</button>
+        <button onClick={loadForReview} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700">{L.pull}</button>
       </div>
     </div>)}
 
@@ -340,7 +340,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de Ã
           </div>
         </>)}
         {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-        <div className="mt-4 flex justify-end"><button onClick={()=>setStep('preview')} disabled={reviewEntries.length===0&&successFee===0} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{L.next} â†’</button></div>
+        <div className="mt-4 flex justify-end"><button onClick={()=>setStep('preview')} disabled={reviewEntries.length===0&&successFee===0} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{L.next} â†’</button></div>
       </div>)
     }
 
@@ -363,7 +363,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de Ã
         {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
         <div className="mt-4 flex justify-between">
           <button onClick={()=>setStep('review')} className="flex items-center gap-1 px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
-          <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{saving?'...':L.save}</button>
+          <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
         </div>
       </div>)
     }

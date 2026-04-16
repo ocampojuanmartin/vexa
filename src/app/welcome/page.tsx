@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, FileText, BarChart3, Users, Shield, Globe, Check, Menu, X, Scale, Lock, Languages } from 'lucide-react'
+import { Clock, FileText, BarChart3, Users, Shield, Globe, Check, Menu, X } from 'lucide-react'
 
 export default function LandingPage() {
   const [lang, setLang] = useState<'es'|'en'>('en')
@@ -64,15 +64,6 @@ export default function LandingPage() {
       send: es ? 'Solicitar demo' : 'Request demo',
       sent: es ? '¡Listo! Te contactaremos pronto.' : 'Done! We\'ll be in touch soon.',
     },
-    trust: {
-      eyebrow: es ? 'Construido para abogados' : 'Built for lawyers',
-      items: [
-        { icon: Scale, label: es ? 'Flujos legales nativos' : 'Native legal workflows', sub: es ? 'Originación, lideranza, tope de horas, descuentos.' : 'Origination, lead partner, hour caps, discounts.' },
-        { icon: Lock, label: es ? 'Seguridad por fila (RLS)' : 'Row-level security (RLS)', sub: es ? 'Cada rol ve solo lo que le corresponde.' : 'Each role sees only what it should.' },
-        { icon: Languages, label: es ? 'Bilingüe ES / EN' : 'Bilingual ES / EN', sub: es ? 'Idioma por usuario y por asunto.' : 'Language per user and per matter.' },
-        { icon: FileText, label: es ? 'PDF profesional' : 'Professional PDF', sub: es ? 'Timesheets con código, logo y estado.' : 'Timesheets with code, logo, and status.' },
-      ],
-    },
     footer: { copy: `© ${new Date().getFullYear()} Vexa. ${es ? 'Todos los derechos reservados.' : 'All rights reserved.'}` }
   }
 
@@ -87,7 +78,7 @@ export default function LandingPage() {
             <a href="#how" className="text-[13px] text-ink-700 hover:text-ink-900 transition-colors">{L.nav.how}</a>
             <a href="#contact" className="text-[13px] text-ink-700 hover:text-ink-900 transition-colors">{L.nav.contact}</a>
             <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} className="text-[11px] uppercase tracking-[0.14em] text-ink-500 hover:text-ink-700 font-medium">{lang === 'es' ? 'EN' : 'ES'}</button>
-            <Link href="/login" className="px-4 py-2 bg-amber-500 text-white rounded-md active:scale-[0.98] text-[13px] font-medium hover:bg-amber-600 shadow-soft">{L.nav.login}</Link>
+            <Link href="/login" className="px-4 py-2 bg-vexa-600 text-white rounded-md text-[13px] font-medium hover:bg-vexa-700 shadow-soft">{L.nav.login}</Link>
           </div>
           <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2" aria-label={menuOpen ? 'Close menu' : 'Open menu'}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -99,7 +90,7 @@ export default function LandingPage() {
             <a href="#how" onClick={() => setMenuOpen(false)} className="block text-sm text-ink-700">{L.nav.how}</a>
             <a href="#contact" onClick={() => setMenuOpen(false)} className="block text-sm text-ink-700">{L.nav.contact}</a>
             <button onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setMenuOpen(false) }} className="block text-sm text-ink-500">{lang === 'es' ? 'English' : 'Español'}</button>
-            <Link href="/login" className="block px-4 py-2 bg-amber-500 text-white rounded-md active:scale-[0.98] text-sm font-medium text-center">{L.nav.login}</Link>
+            <Link href="/login" className="block px-4 py-2 bg-vexa-600 text-white rounded-md text-sm font-medium text-center">{L.nav.login}</Link>
           </div>
         )}
       </nav>
@@ -121,33 +112,8 @@ export default function LandingPage() {
             {L.hero.sub}
           </p>
           <div className="mt-12 flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="#contact" className="px-8 py-3.5 bg-amber-500 text-white rounded-md active:scale-[0.98] text-sm font-medium hover:bg-amber-600 transition-colors shadow-soft-md">{L.hero.cta}</a>
+            <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 transition-colors shadow-soft-md">{L.hero.cta}</a>
             <a href="#features" className="px-8 py-3.5 border border-canvas-300 text-ink-900 rounded-md text-sm font-medium hover:bg-canvas-100 transition-colors">{L.hero.cta2}</a>
-          </div>
-        </div>
-      </section>
-
-      {/* TRUST STRIP — "Trust & Authority" per ui-ux-pro-max */}
-      <section className="py-10 px-6 border-y border-canvas-200 bg-vexa-600 relative overflow-hidden">
-        {/* Subtle amber accent line, evokes seal ribbon */}
-        <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-        <div className="max-w-6xl mx-auto">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-amber-300/90 font-medium text-center mb-8 animate-metric-pulse">{L.trust.eyebrow}</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-vexa-700/50 rounded-lg overflow-hidden ring-1 ring-vexa-700/50">
-            {L.trust.items.map((t, i) => {
-              const Icon = t.icon
-              return (
-                <div key={i} className="bg-vexa-600 p-5 flex flex-col items-start gap-3 hover:bg-vexa-700/70 transition-colors">
-                  <div className="w-9 h-9 rounded-md bg-amber-500/15 ring-1 ring-amber-400/30 flex items-center justify-center">
-                    <Icon size={16} className="text-amber-300" strokeWidth={1.75} />
-                  </div>
-                  <div>
-                    <p className="font-display text-base text-white leading-snug tracking-tight">{t.label}</p>
-                    <p className="text-[12px] text-white/60 mt-1 leading-snug">{t.sub}</p>
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
       </section>
@@ -164,8 +130,8 @@ export default function LandingPage() {
             {L.features.items.map((f, i) => {
               const Icon = f.icon
               return (
-                <div key={i} className="bg-white p-8 hover:bg-canvas-50/40 transition-colors group">
-                  <div className="w-10 h-10 rounded-md bg-gradient-to-br from-vexa-600 to-vexa-700 flex items-center justify-center mb-5 shadow-soft ring-1 ring-amber-400/0 group-hover:ring-amber-400/40 transition-all">
+                <div key={i} className="bg-white p-8 hover:bg-canvas-50/50 transition-colors">
+                  <div className="w-10 h-10 rounded-md bg-gradient-to-br from-vexa-600 to-vexa-700 flex items-center justify-center mb-5 shadow-soft">
                     <Icon size={18} className="text-white" strokeWidth={1.75} />
                   </div>
                   <h3 className="font-display text-xl text-ink-900 mb-3 tracking-tight">{f.title}</h3>
@@ -187,12 +153,11 @@ export default function LandingPage() {
           <div className="space-y-14">
             {L.how.steps.map((step, i) => (
               <div key={i} className="flex gap-8 items-start">
-                <div className="flex-shrink-0 pt-1 relative">
-                  <span className="font-display text-6xl italic text-vexa-600 tabular-nums tracking-tighter leading-none">{step.n}</span>
-                  <span className="absolute -bottom-1 left-0 w-6 h-[2px] bg-amber-500" />
+                <div className="flex-shrink-0 pt-1">
+                  <span className="font-display text-5xl text-vexa-600/20 tabular-nums tracking-tighter">{step.n}</span>
                 </div>
-                <div className="flex-1 pt-1">
-                  <h3 className="font-display text-xl text-ink-900 mb-2 tracking-tight">{step.title}</h3>
+                <div className="flex-1 pt-2 border-t border-canvas-200">
+                  <h3 className="font-display text-xl text-ink-900 mt-4 mb-2 tracking-tight">{step.title}</h3>
                   <p className="text-sm text-ink-500 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
@@ -246,7 +211,7 @@ export default function LandingPage() {
                 </select>
               </div>
               <button type="submit" disabled={submitting}
-                className="w-full py-3 bg-amber-500 text-white rounded-md active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50 shadow-soft">
+                className="w-full py-3 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 disabled:opacity-50 shadow-soft">
                 {submitting ? '...' : L.cta.send}
               </button>
             </form>

@@ -107,7 +107,7 @@ export default function ExpensesPage() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl text-ink-900 tracking-tight">{L.title}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600"><Plus size={16}/>{L.new}</button>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700"><Plus size={16}/>{L.new}</button>
       </div>
       {entries.length > 0 && (
         <div className="mt-4 relative">
@@ -190,7 +190,7 @@ export default function ExpensesPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving||uploading} className="px-4 py-2 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{saving||uploading?'...':L.save}</button>
+              <button onClick={handleSave} disabled={saving||uploading} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving||uploading?'...':L.save}</button>
             </div>
           </div>
         </div>

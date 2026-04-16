@@ -296,7 +296,7 @@ export default function TimePage(){
             <div className="flex flex-col justify-between">
               {error&&<p className="text-xs text-red-600 mb-2">{error}</p>}
               <div className="space-y-2">
-                <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2.5 bg-amber-500 text-white rounded-lg active:scale-[0.98] text-sm font-medium hover:bg-amber-600 disabled:opacity-50">{saving?'...':editing?L.editing_:formShareWith?(es?'Enviar para aprobación':'Send for approval'):L.insert}</button>
+                <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':editing?L.editing_:formShareWith?(es?'Enviar para aprobación':'Send for approval'):L.insert}</button>
                 {editing&&<button onClick={resetForm} className="w-full px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>}
               </div>
             </div>
