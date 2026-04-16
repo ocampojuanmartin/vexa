@@ -3,17 +3,19 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/i18n/context'
-import { Plus, Search, X, FileText, ChevronRight, Eye, ArrowLeft } from 'lucide-react'
+import { Plus, Search, X, FileText, ChevronRight, ArrowLeft, Download } from 'lucide-react'
 
 type Timesheet = {
-  id:string; period_start:string; period_end:string; status:string
+  id:string; code:string; period_start:string; period_end:string; status:string
   total_billed_hours:number; total_billed_amount:number; total_expenses:number
-  matter_id:string; created_by:string; payment_date:string|null; payment_method:string|null; payment_amount:number|null; payment_currency:string|null
+  discount_amount:number; discount_description:string; success_fee:number; success_fee_description:string
+  matter_id:string; created_by:string; payment_date:string|null; payment_method:string|null
+  payment_amount:number|null; payment_currency:string|null
   matters?:any; users?:any
 }
-type Matter = { id:string; title:string; custom_rate:number|null; client_id:string; clients?:any }
+type Matter = { id:string; title:string; custom_rate:number|null; client_id:string; rate_currency:string; hour_cap:number|null; use_flat_rate:boolean; flat_rate:number|null; clients?:any }
 type ClientOption = { id:string; name:string }
-type TimeEntry = { id:string; entry_date:string; hours_logged:number; description:string; is_billable:boolean; user_id:string; users?:any }
+type TimeEntry = { id:string; entry_date:string; hours_logged:number; description:string; is_billable:boolean; user_id:string; authorized_by:string|null; users?:any }
 type Expense = { id:string; expense_date:string; category:string; amount:number; currency:string }
 type ItemEdit = { time_entry_id:string; hours_billed:number; rate:number; user_id:string }
 
@@ -33,21 +35,20 @@ export default function TimesheetsPage(){
   const[firmId,setFirmId]=useState('')
   const[userId,setUserId]=useState('')
 
-  // Create
   const[selClient,setSelClient]=useState('')
   const[selMatter,setSelMatter]=useState('')
   const[dateFrom,setDateFrom]=useState('')
   const[dateTo,setDateTo]=useState('')
-
-  // Review
   const[step,setStep]=useState<'select'|'review'|'preview'>('select')
   const[reviewEntries,setReviewEntries]=useState<TimeEntry[]>([])
   const[reviewExpenses,setReviewExpenses]=useState<Expense[]>([])
   const[itemEdits,setItemEdits]=useState<ItemEdit[]>([])
+  const[discount,setDiscount]=useState(0)
+  const[discountDesc,setDiscountDesc]=useState('')
+  const[successFee,setSuccessFee]=useState(0)
+  const[successFeeDesc,setSuccessFeeDesc]=useState('')
   const[saving,setSaving]=useState(false)
   const[error,setError]=useState('')
-
-  // Detail
   const[detail,setDetail]=useState<Timesheet|null>(null)
   const[statusSaving,setStatusSaving]=useState(false)
   const[payDate,setPayDate]=useState('')
@@ -63,8 +64,8 @@ export default function TimesheetsPage(){
     if(!p)return
     setUserId(user.id);setFirmId(p.firm_id)
     const[ts,m,c]=await Promise.all([
-      sb.from('timesheets').select('*, matters(title, client_id, clients(name)), users!timesheets_created_by_fkey(full_name)').order('created_at',{ascending:false}),
-      sb.from('matters').select('id, title, custom_rate, client_id, clients(name)').order('title'),
+      sb.from('timesheets').select('*, matters(title, client_id, rate_currency, clients(name)), users!timesheets_created_by_fkey(full_name)').order('created_at',{ascending:false}),
+      sb.from('matters').select('id, title, custom_rate, client_id, rate_currency, hour_cap, use_flat_rate, flat_rate, clients(name)').order('title'),
       sb.from('clients').select('id, name').order('name'),
     ])
     if(ts.data)setTimesheets(ts.data as any)
@@ -74,27 +75,19 @@ export default function TimesheetsPage(){
   },[])
 
   useEffect(()=>{loadData()},[loadData])
-
   const clientMatters=selClient?matters.filter(m=>m.client_id===selClient):matters
 
   async function loadForReview(){
     if(!selMatter||!dateFrom||!dateTo){setError(es?'Completá todos los campos':'Fill all fields');return}
     setError('')
     const sb=createClient()
-    // Check for existing timesheet on same matter+period
     const{data:existing}=await sb.from('timesheets').select('id, period_start, period_end, status').eq('matter_id',selMatter)
     const overlap=(existing||[]).find((t:any)=>t.period_start<=dateTo&&t.period_end>=dateFrom)
-    if(overlap){setError(es?`Ya existe un timesheet para este asunto en el período ${overlap.period_start} → ${overlap.period_end} (${overlap.status})`:`A timesheet already exists for this matter in period ${overlap.period_start} → ${overlap.period_end} (${overlap.status})`);return}
+    if(overlap){setError(es?`Ya existe un timesheet (${overlap.period_start} → ${overlap.period_end}, ${overlap.status})`:`Timesheet exists (${overlap.period_start} → ${overlap.period_end}, ${overlap.status})`);return}
 
     const matter=matters.find(m=>m.id===selMatter)
-    // Load category rates for this matter
     const{data:catRates}=await sb.from('matter_category_rates').select('category_id, rate').eq('matter_id',selMatter)
-    const catRateMap:Record<string,number>={}
-    catRates?.forEach((cr:any)=>{catRateMap[cr.category_id]=cr.rate})
-    // Load user categories
-    const{data:userCats}=await sb.from('users').select('id, category_id, hourly_rate').eq('is_active',true)
-    const userCatMap:Record<string,{category_id:string|null;hourly_rate:number}>={}
-    userCats?.forEach((u:any)=>{userCatMap[u.id]={category_id:u.category_id,hourly_rate:u.hourly_rate}})
+    const catRateMap:Record<string,number>={};catRates?.forEach((cr:any)=>{catRateMap[cr.category_id]=cr.rate})
 
     const{data:te}=await sb.from('time_entries').select('*, users!time_entries_user_id_fkey(full_name, hourly_rate, category_id)').eq('matter_id',selMatter).eq('is_billable',true).gte('entry_date',dateFrom).lte('entry_date',dateTo).order('entry_date')
     const{data:existingItems}=await sb.from('timesheet_items').select('time_entry_id')
@@ -108,31 +101,43 @@ export default function TimesheetsPage(){
 
     setReviewEntries(unbilled as any)
     setItemEdits(unbilled.map((e:any)=>{
-      const userCat=e.users?.category_id
-      const rate=userCat&&catRateMap[userCat]?catRateMap[userCat]:e.users?.hourly_rate||0
+      let rate=0
+      if(matter?.use_flat_rate&&matter.flat_rate){rate=matter.flat_rate}
+      else{const userCat=e.users?.category_id;rate=userCat&&catRateMap[userCat]?catRateMap[userCat]:e.users?.hourly_rate||0}
       return{time_entry_id:e.id,hours_billed:e.hours_logged,rate,user_id:e.user_id}
     }))
     setReviewExpenses(unbilledExp as any)
+
+    // Auto-apply hour cap discount
+    if(matter?.hour_cap){
+      const totalHrs=unbilled.reduce((s:number,e:any)=>s+e.hours_logged,0)
+      if(totalHrs>matter.hour_cap){
+        const avgRate=unbilled.length>0?unbilled.reduce((s:number,e:any)=>{const userCat=e.users?.category_id;const r=matter.use_flat_rate&&matter.flat_rate?matter.flat_rate:userCat&&catRateMap[userCat]?catRateMap[userCat]:e.users?.hourly_rate||0;return s+r},0)/unbilled.length:0
+        const excessHrs=totalHrs-matter.hour_cap
+        setDiscount(Math.round(excessHrs*avgRate*100)/100)
+        setDiscountDesc(es?`Tope de ${matter.hour_cap}hs (${hrsToHM(excessHrs)} excedidas)`:`Cap of ${matter.hour_cap}hrs (${hrsToHM(excessHrs)} exceeded)`)
+      }else{setDiscount(0);setDiscountDesc('')}
+    }else{setDiscount(0);setDiscountDesc('')}
+    setSuccessFee(0);setSuccessFeeDesc('')
     setStep('review')
   }
 
-  function updateItem(i:number,field:string,val:string){
-    const items=[...itemEdits]
-    if(field==='hours')items[i].hours_billed=parseFloat(val)||0
-    if(field==='rate')items[i].rate=parseFloat(val)||0
-    setItemEdits(items)
-  }
+  function updateItem(i:number,field:string,val:string){const items=[...itemEdits];if(field==='hours')items[i].hours_billed=parseFloat(val)||0;if(field==='rate')items[i].rate=parseFloat(val)||0;setItemEdits(items)}
 
-  function goToPreview(){setStep('preview')}
-  function goBackToReview(){setStep('review')}
+  const totalHrs=itemEdits.reduce((s,i)=>s+i.hours_billed,0)
+  const totalAmt=itemEdits.reduce((s,i)=>s+i.hours_billed*i.rate,0)
+  const totalExp=reviewExpenses.reduce((s,e)=>s+e.amount,0)
+  const grandTotal=totalAmt+totalExp-discount+successFee
 
   async function saveTimesheet(){
     setSaving(true);setError('')
     const sb=createClient()
-    const totalHrs=itemEdits.reduce((s,i)=>s+i.hours_billed,0)
-    const totalAmt=itemEdits.reduce((s,i)=>s+i.hours_billed*i.rate,0)
-    const totalExp=reviewExpenses.reduce((s,e)=>s+e.amount,0)
-    const{data:ts,error:err}=await sb.from('timesheets').insert({firm_id:firmId,matter_id:selMatter,created_by:userId,period_start:dateFrom,period_end:dateTo,status:'draft',total_billed_hours:totalHrs,total_billed_amount:totalAmt,total_expenses:totalExp}).select('id').single()
+    const{data:ts,error:err}=await sb.from('timesheets').insert({
+      firm_id:firmId,matter_id:selMatter,created_by:userId,period_start:dateFrom,period_end:dateTo,
+      status:'draft',total_billed_hours:totalHrs,total_billed_amount:totalAmt,total_expenses:totalExp,
+      discount_amount:discount,discount_description:discountDesc,
+      success_fee:successFee,success_fee_description:successFeeDesc,
+    }).select('id').single()
     if(err||!ts){setError(err?.message||'Error');setSaving(false);return}
     if(itemEdits.length>0){await sb.from('timesheet_items').insert(itemEdits.filter(i=>i.hours_billed>0).map(i=>({timesheet_id:ts.id,time_entry_id:i.time_entry_id,user_id:i.user_id,hours_billed:i.hours_billed,rate_applied:i.rate,amount:i.hours_billed*i.rate})))}
     if(reviewExpenses.length>0){await sb.from('timesheet_expenses').insert(reviewExpenses.map(e=>({timesheet_id:ts.id,expense_id:e.id,amount_billed:e.amount})))}
@@ -143,31 +148,57 @@ export default function TimesheetsPage(){
     setStatusSaving(true)
     const sb=createClient()
     const update:any={status:newStatus}
-    if(newStatus==='paid'){update.payment_date=payDate||new Date().toISOString().slice(0,10);update.payment_method=payMethod||null;update.payment_amount=payAmount?parseFloat(payAmount):ts.total_billed_amount+ts.total_expenses;update.payment_currency=payCurrency}
+    if(newStatus==='paid'){update.payment_date=payDate||new Date().toISOString().slice(0,10);update.payment_method=payMethod||null;update.payment_amount=payAmount?parseFloat(payAmount):grandTotalForDetail(ts);update.payment_currency=payCurrency}
     await sb.from('timesheets').update(update).eq('id',ts.id)
     setStatusSaving(false);setDetail(null);loadData()
   }
 
-  const statusLabel=(s:string)=>(es?{draft:'Borrador',sent:'Enviado',approved:'Aprobado',invoice_issued:'Factura emitida',paid:'Pagado',unpaid:'Impago'}:{draft:'Draft',sent:'Sent',approved:'Approved',invoice_issued:'Invoice issued',paid:'Paid',unpaid:'Unpaid'})[s]||s
-  const statusColor=(s:string)=>({draft:'bg-gray-100 text-gray-600',sent:'bg-blue-50 text-blue-700',approved:'bg-purple-50 text-purple-700',invoice_issued:'bg-amber-50 text-amber-700',paid:'bg-green-50 text-green-700',unpaid:'bg-red-50 text-red-700'})[s]||'bg-gray-100 text-gray-600'
-  const nextStatus=(s:string):string|null=>({draft:'sent',sent:'approved',approved:'invoice_issued',invoice_issued:'paid',unpaid:'paid'})[s]||null
+  function grandTotalForDetail(t:Timesheet){return(t.total_billed_amount||0)+(t.total_expenses||0)-(t.discount_amount||0)+(t.success_fee||0)}
+
+  function downloadPDF(ts:Timesheet,isDraft:boolean){
+    const total=grandTotalForDetail(ts)
+    const currency=ts.matters?.rate_currency||'USD'
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${ts.code}</title>
+<style>body{font-family:-apple-system,sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#1a365d;position:relative}
+h1{font-size:20px;margin:0}h2{font-size:14px;color:#718096;margin:4px 0 0}
+table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px}
+th{background:#f7fafc;font-weight:600;color:#4a5568}.right{text-align:right}.total-row{font-weight:700;background:#f7fafc}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
+.meta{font-size:12px;color:#718096;margin-top:16px}.meta span{display:block;margin:2px 0}
+.footer{margin-top:30px;padding-top:16px;border-top:2px solid #1a365d;display:flex;justify-content:space-between;font-size:14px}
+.grand{font-size:20px;font-weight:700}
+${isDraft?'.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:120px;color:rgba(255,0,0,0.08);font-weight:900;pointer-events:none;z-index:1}':''}
+</style></head><body>
+${isDraft?'<div class="watermark">DRAFT</div>':''}
+<div class="header"><div><h1>vexa</h1><h2>${ts.matters?.title||''}</h2><p style="font-size:12px;color:#a0aec0;margin-top:4px">${ts.matters?.clients?.name||''}</p></div>
+<div style="text-align:right"><p style="font-size:16px;font-weight:600">${ts.code}</p><p style="font-size:12px;color:#718096">${ts.period_start} → ${ts.period_end}</p>
+${isDraft?'<p style="font-size:11px;color:red;margin-top:4px">DRAFT</p>':''}</div></div>
+<table><thead><tr><th>Date</th><th>Lawyer</th><th>Description</th><th class="right">Hours</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
+<tbody id="items"></tbody></table>
+<div class="footer"><div>${ts.total_expenses>0?`<p style="font-size:12px;color:#718096">Expenses: ${currency} ${ts.total_expenses?.toLocaleString()}</p>`:''}
+${ts.discount_amount>0?`<p style="font-size:12px;color:#e53e3e">Discount: -${currency} ${ts.discount_amount?.toLocaleString()} ${ts.discount_description?'('+ts.discount_description+')':''}</p>`:''}
+${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">Success fee: +${currency} ${ts.success_fee?.toLocaleString()} ${ts.success_fee_description?'('+ts.success_fee_description+')':''}</p>`:''}</div>
+<div><p style="color:#718096;font-size:12px">Total</p><p class="grand">${currency} ${total.toLocaleString(undefined,{minimumFractionDigits:2})}</p></div></div>
+<script>window.print()</script></body></html>`
+    const w=window.open('','_blank');if(w){w.document.write(html);w.document.close()}
+  }
+
+  const statusLabel=(s:string)=>(es?{draft:'Borrador',issued:'Emitido',sent:'Enviado',approved:'Aprobado',invoice_issued:'Factura emitida',paid:'Pagado',unpaid:'Impago'}:{draft:'Draft',issued:'Issued',sent:'Sent',approved:'Approved',invoice_issued:'Invoice issued',paid:'Paid',unpaid:'Unpaid'})[s]||s
+  const statusColor=(s:string)=>({draft:'bg-gray-100 text-gray-600',issued:'bg-indigo-50 text-indigo-700',sent:'bg-blue-50 text-blue-700',approved:'bg-purple-50 text-purple-700',invoice_issued:'bg-amber-50 text-amber-700',paid:'bg-green-50 text-green-700',unpaid:'bg-red-50 text-red-700'})[s]||'bg-gray-100 text-gray-600'
+  const nextStatus=(s:string):string|null=>({draft:'issued',issued:'sent',sent:'approved',approved:'invoice_issued',invoice_issued:'paid',unpaid:'paid'})[s]||null
 
   const filtered=timesheets.filter(t=>{
     if(filterClient&&t.matters?.client_id!==filterClient)return false
     if(filterStatus!=='all'&&t.status!==filterStatus)return false
-    if(search){const s=search.toLowerCase();return t.matters?.title?.toLowerCase().includes(s)||t.matters?.clients?.name?.toLowerCase().includes(s)}
+    if(search){const s=search.toLowerCase();return t.code?.toLowerCase().includes(s)||t.matters?.title?.toLowerCase().includes(s)||t.matters?.clients?.name?.toLowerCase().includes(s)}
     return true
   })
 
-  const totalHrs=itemEdits.reduce((s,i)=>s+i.hours_billed,0)
-  const totalAmt=itemEdits.reduce((s,i)=>s+i.hours_billed*i.rate,0)
-  const totalExp=reviewExpenses.reduce((s,e)=>s+e.amount,0)
-
   const L={
     timesheets:es?'Timesheets':'Timesheets',create:es?'Crear':'Create',view:es?'Ver':'View',
-    new:es?'Nuevo timesheet':'New timesheet',client:es?'Cliente':'Client',matter:es?'Asunto':'Matter',
-    from:es?'Desde':'From',to:es?'Hasta':'To',pull:es?'Buscar horas y gastos':'Pull hours & expenses',
-    review:es?'Revisión — Ajustar horas':'Review — Adjust hours',preview:es?'Vista previa':'Preview',
+    client:es?'Cliente':'Client',matter:es?'Asunto':'Matter',from:es?'Desde':'From',to:es?'Hasta':'To',
+    pull:es?'Buscar horas y gastos':'Pull hours & expenses',
+    review:es?'Revisión — Ajustar horas y tarifas':'Review — Adjust hours & rates',preview:es?'Vista previa':'Preview',
     lawyer:es?'Abogado':'Lawyer',desc:es?'Descripción':'Description',
     logged:es?'Logueadas':'Logged',billed:es?'A facturar':'To bill',rate:es?'Tarifa':'Rate',
     subtotal:'Subtotal',expenses:es?'Gastos':'Expenses',
@@ -175,247 +206,179 @@ export default function TimesheetsPage(){
     totalExp:es?'Total gastos':'Total expenses',grand:es?'Gran total':'Grand total',
     save:es?'Confirmar y crear':'Confirm & create',cancel:es?'Cancelar':'Cancel',
     back:es?'Volver a editar':'Back to edit',next:es?'Vista previa':'Preview',
-    search:es?'Buscar...':'Search...',none:es?'No hay timesheets':'No timesheets',
+    search:es?'Buscar por código o nombre...':'Search by code or name...',none:es?'No hay timesheets':'No timesheets',
     select:es?'Seleccionar':'Select',all:es?'Todos':'All',allClients:es?'Todos los clientes':'All clients',
     advance:es?'Avanzar a':'Advance to',markUnpaid:es?'Marcar impago':'Mark unpaid',
     payDate:es?'Fecha pago':'Pay date',payMethod:es?'Método':'Method',payAmt:es?'Monto':'Amount',
-    period:es?'Período':'Period',status:es?'Estado':'Status',
+    period:es?'Período':'Period',status:es?'Estado':'Status',code:es?'Código':'Code',
     noEntries:es?'No hay horas sin facturar en este período':'No unbilled hours in this period',
+    discountLabel:es?'Descuento':'Discount',discountDescLabel:es?'Motivo del descuento':'Discount reason',
+    successFeeLabel:es?'Success fee':'Success fee',successFeeDescLabel:es?'Descripción del success fee':'Success fee description',
+    downloadDraft:es?'Descargar borrador (DRAFT)':'Download draft (DRAFT)',
+    downloadFinal:es?'Descargar PDF final':'Download final PDF',
+    successOnly:es?'Solo success fee':'Success fee only',
   }
 
   // DETAIL VIEW
   if(detail){
     const next=nextStatus(detail.status)
-    const total=detail.total_billed_amount+detail.total_expenses
-    return(
-      <div>
-        <button onClick={()=>setDetail(null)} className="flex items-center gap-1 text-sm text-vexa-600 hover:text-vexa-700 mb-4"><ArrowLeft size={14}/>{L.timesheets}</button>
-        <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg space-y-4">
-          <h2 className="text-lg font-semibold">{detail.matters?.title}</h2>
-          <p className="text-sm text-gray-500">{detail.matters?.clients?.name}</p>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div><span className="text-gray-500">{L.period}:</span> <span className="font-medium">{detail.period_start} → {detail.period_end}</span></div>
-            <div><span className="text-gray-500">{L.status}:</span> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(detail.status)}`}>{statusLabel(detail.status)}</span></div>
-            <div><span className="text-gray-500">{L.totalHrs}:</span> <span className="font-medium">{hrsToHM(detail.total_billed_hours||0)}</span></div>
-            <div><span className="text-gray-500">{L.totalAmt}:</span> <span className="font-medium">{detail.total_billed_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-            <div><span className="text-gray-500">{L.totalExp}:</span> <span className="font-medium">{detail.total_expenses?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-            <div><span className="text-gray-500">{L.grand}:</span> <span className="font-semibold">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-          </div>
-          {detail.payment_date&&<div className="text-sm border-t pt-3 border-gray-100"><span className="text-gray-500">{L.payDate}:</span> {detail.payment_date} {detail.payment_method&&`(${detail.payment_method})`} {detail.payment_currency||''} {detail.payment_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</div>}
-          {next&&(
-            <div className="border-t pt-4 border-gray-100 space-y-3">
-              {next==='paid'&&(
-                <div className="grid grid-cols-4 gap-2">
-                  <input type="date" value={payDate} onChange={e=>setPayDate(e.target.value)} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
-                  <input type="text" value={payMethod} onChange={e=>setPayMethod(e.target.value)} placeholder={L.payMethod} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
-                  <select value={payCurrency} onChange={e=>setPayCurrency(e.target.value)} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white">
-                    <option value="ARS">ARS</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option></select>
-                  <input type="number" value={payAmount} onChange={e=>setPayAmount(e.target.value)} placeholder={L.payAmt} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
-                {(detail.status==='invoice_issued')&&<button onClick={()=>advanceStatus(detail,'unpaid')} disabled={statusSaving} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">{L.markUnpaid}</button>}
-              </div>
-            </div>
-          )}
+    const total=grandTotalForDetail(detail)
+    const canDownloadDraft=detail.status==='draft'
+    const canDownloadFinal=detail.status==='issued'||detail.status==='sent'||detail.status==='approved'||detail.status==='invoice_issued'||detail.status==='paid'
+    return(<div>
+      <button onClick={()=>setDetail(null)} className="flex items-center gap-1 text-sm text-vexa-500 hover:text-vexa-600 mb-4"><ArrowLeft size={14}/>{L.timesheets}</button>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg space-y-4">
+        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">{detail.matters?.title}</h2><span className="text-sm font-mono text-gray-400">{detail.code}</span></div>
+        <p className="text-sm text-gray-500">{detail.matters?.clients?.name}</p>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div><span className="text-gray-500">{L.period}:</span> <span className="font-medium">{detail.period_start} → {detail.period_end}</span></div>
+          <div><span className="text-gray-500">{L.status}:</span> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(detail.status)}`}>{statusLabel(detail.status)}</span></div>
+          <div><span className="text-gray-500">{L.totalHrs}:</span> <span className="font-medium">{hrsToHM(detail.total_billed_hours||0)}</span></div>
+          <div><span className="text-gray-500">{L.totalAmt}:</span> <span className="font-medium">{detail.total_billed_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div><span className="text-gray-500">{L.totalExp}:</span> <span className="font-medium">{detail.total_expenses?.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          {detail.discount_amount>0&&<div><span className="text-red-600">{L.discountLabel}:</span> <span className="font-medium text-red-600">-{detail.discount_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</span>{detail.discount_description&&<span className="text-xs text-gray-400 ml-1">({detail.discount_description})</span>}</div>}
+          {detail.success_fee>0&&<div><span className="text-green-600">{L.successFeeLabel}:</span> <span className="font-medium text-green-600">+{detail.success_fee?.toLocaleString(undefined,{minimumFractionDigits:2})}</span>{detail.success_fee_description&&<span className="text-xs text-gray-400 ml-1">({detail.success_fee_description})</span>}</div>}
+          <div className="col-span-2 border-t pt-2 border-gray-100"><span className="font-semibold">{L.grand}:</span> <span className="font-semibold text-lg">{total.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </div>
+        {detail.payment_date&&<div className="text-sm border-t pt-3 border-gray-100"><span className="text-gray-500">{L.payDate}:</span> {detail.payment_date} {detail.payment_method&&`(${detail.payment_method})`} {detail.payment_currency||''} {detail.payment_amount?.toLocaleString(undefined,{minimumFractionDigits:2})}</div>}
+        
+        {/* PDF downloads */}
+        <div className="flex gap-2 flex-wrap">
+          {canDownloadDraft&&<button onClick={()=>downloadPDF(detail,true)} className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"><Download size={14}/>{L.downloadDraft}</button>}
+          {canDownloadFinal&&<button onClick={()=>downloadPDF(detail,false)} className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"><Download size={14}/>{L.downloadFinal}</button>}
+        </div>
+
+        {next&&(<div className="border-t pt-4 border-gray-100 space-y-3">
+          {next==='paid'&&(<div className="grid grid-cols-4 gap-2">
+            <input type="date" value={payDate} onChange={e=>setPayDate(e.target.value)} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
+            <input type="text" value={payMethod} onChange={e=>setPayMethod(e.target.value)} placeholder={L.payMethod} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
+            <select value={payCurrency} onChange={e=>setPayCurrency(e.target.value)} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white"><option value="ARS">ARS</option><option value="USD">USD</option><option value="EUR">EUR</option></select>
+            <input type="number" value={payAmount} onChange={e=>setPayAmount(e.target.value)} placeholder={L.payAmt} className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"/>
+          </div>)}
+          <div className="flex gap-2">
+            <button onClick={()=>advanceStatus(detail,next)} disabled={statusSaving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{statusSaving?'...':`${L.advance} ${statusLabel(next)}`}</button>
+            {detail.status==='invoice_issued'&&<button onClick={()=>advanceStatus(detail,'unpaid')} disabled={statusSaving} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">{L.markUnpaid}</button>}
+          </div>
+        </div>)}
       </div>
-    )
+    </div>)
   }
 
   // CREATE TAB
   if(tab==='create'){
-    // SELECT step
-    if(step==='select'){
-      return(
-        <div>
-          <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
-            <button onClick={()=>setTab('view')} className="pb-3 text-sm text-gray-500 hover:text-gray-700">{L.view}</button>
-            <button className="pb-3 text-sm font-medium text-vexa-600 border-b-2 border-vexa-600">{L.create}</button>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 max-w-lg">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.client}</label>
-              <select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                <option value="">{L.allClients}</option>
-                {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label>
-              <select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                <option value="">{L.select}</option>
-                {clientMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.from}</label>
-                <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.to}</label>
-                <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
-            </div>
-            {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-            <button onClick={loadForReview} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.pull}</button>
-          </div>
+    if(step==='select'){return(<div>
+      <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
+        <button onClick={()=>setTab('view')} className="pb-3 text-sm text-gray-500 hover:text-gray-700">{L.view}</button>
+        <button className="pb-3 text-sm font-medium text-vexa-600 border-b-2 border-vexa-500">{L.create}</button>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 max-w-lg">
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.client}</label><select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.allClients}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.matter} *</label><select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.select}</option>{clientMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.from}</label><input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+          <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.to}</label><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
         </div>
-      )
-    }
+        {error&&<p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        <button onClick={loadForReview} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.pull}</button>
+      </div>
+    </div>)}
 
-    // REVIEW step (editable)
     if(step==='review'){
-      return(
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold">{L.review}</h2>
-              <p className="text-sm text-gray-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo}</p>
+      const matterCurrency=matters.find(m=>m.id===selMatter)?.rate_currency||'USD'
+      return(<div>
+        <div className="flex items-center justify-between mb-4"><div><h2 className="text-xl font-semibold">{L.review}</h2><p className="text-sm text-gray-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo} ({matterCurrency})</p></div><button onClick={()=>setStep('select')} className="text-sm text-gray-500 hover:text-gray-700">{L.cancel}</button></div>
+        {reviewEntries.length===0&&successFee===0?<div className="bg-white rounded-xl border border-gray-200 p-6 text-center text-sm text-gray-500">{L.noEntries}</div>:(<>
+          {reviewEntries.length>0&&(<div className="bg-white rounded-xl border border-gray-200 overflow-x-auto"><table className="w-full text-sm">
+            <thead><tr className="border-b border-gray-100 bg-gray-50"><th className="text-left px-3 py-2 font-medium text-gray-600">{L.lawyer}</th><th className="text-left px-3 py-2 font-medium text-gray-600">{L.desc}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.logged}</th><th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.billed}</th><th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.rate} ({matterCurrency})</th><th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.subtotal}</th></tr></thead>
+            <tbody>{reviewEntries.map((e,i)=>(<tr key={e.id} className="border-b border-gray-50">
+              <td className="px-3 py-2 text-gray-600">{e.users?.full_name}</td>
+              <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{e.entry_date} — {e.description}{e.authorized_by&&<span className="text-gray-400 ml-1">[{e.authorized_by}]</span>}</td>
+              <td className="px-3 py-2 text-right text-gray-400">{hrsToHM(e.hours_logged)}</td>
+              <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="0.25" value={itemEdits[i]?.hours_billed??0} onChange={ev=>updateItem(i,'hours',ev.target.value)} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right"/></td>
+              <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="1" value={itemEdits[i]?.rate??0} onChange={ev=>updateItem(i,'rate',ev.target.value)} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right"/></td>
+              <td className="px-3 py-2 text-right font-medium bg-vexa-50/30">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+            </tr>))}</tbody></table></div>)}
+          {reviewExpenses.length>0&&(<div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto"><div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div><table className="w-full text-sm"><tbody>{reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50"><td className="px-4 py-2 text-gray-600">{e.expense_date}</td><td className="px-4 py-2 text-gray-600">{e.category}</td><td className="px-4 py-2 text-right font-medium">{e.currency!==matterCurrency?<span className="text-amber-600">{e.currency} </span>:''}{e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div>)}
+          {/* Discount + Success Fee */}
+          <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.discountLabel} ({matterCurrency})</label><input type="number" step="0.01" value={discount||''} onChange={e=>setDiscount(parseFloat(e.target.value)||0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0"/></div>
+              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.discountDescLabel}</label><input type="text" value={discountDesc} onChange={e=>setDiscountDesc(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
             </div>
-            <button onClick={()=>setStep('select')} className="text-sm text-gray-500 hover:text-gray-700">{L.cancel}</button>
-          </div>
-          {reviewEntries.length===0?<div className="bg-white rounded-xl border border-gray-200 p-6 text-center text-sm text-gray-500">{L.noEntries}</div>:(
-            <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead><tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-3 py-2 font-medium text-gray-600">{L.lawyer}</th>
-                  <th className="text-left px-3 py-2 font-medium text-gray-600">{L.desc}</th>
-                  <th className="text-right px-3 py-2 font-medium text-gray-600">{L.logged}</th>
-                  <th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.billed}</th>
-                  <th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.rate}</th>
-                  <th className="text-right px-3 py-2 font-medium text-gray-600 bg-vexa-50">{L.subtotal}</th>
-                </tr></thead>
-                <tbody>
-                  {reviewEntries.map((e,i)=>(
-                    <tr key={e.id} className="border-b border-gray-50">
-                      <td className="px-3 py-2 text-gray-600">{e.users?.full_name}</td>
-                      <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{e.entry_date} — {e.description}</td>
-                      <td className="px-3 py-2 text-right text-gray-400">{hrsToHM(e.hours_logged)}</td>
-                      <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="0.25" value={itemEdits[i]?.hours_billed??0} onChange={ev=>updateItem(i,'hours',ev.target.value)} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right"/></td>
-                      <td className="px-3 py-2 text-right bg-vexa-50/30"><input type="number" step="1" value={itemEdits[i]?.rate??0} onChange={ev=>updateItem(i,'rate',ev.target.value)} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right"/></td>
-                      <td className="px-3 py-2 text-right font-medium bg-vexa-50/30">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {reviewExpenses.length>0&&(
-            <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div>
-              <table className="w-full text-sm"><tbody>
-                {reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50">
-                  <td className="px-4 py-2 text-gray-600">{e.expense_date}</td><td className="px-4 py-2 text-gray-600">{e.category}</td>
-                  <td className="px-4 py-2 text-right font-medium">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
-                </tr>)}
-              </tbody></table>
-            </div>
-          )}
-          <div className="mt-4 flex justify-end"><button onClick={goToPreview} disabled={reviewEntries.length===0} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{L.next} →</button></div>
-        </div>
-      )
-    }
-
-    // PREVIEW step (read-only, confirm)
-    if(step==='preview'){
-      return(
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold">{L.preview}</h2>
-              <p className="text-sm text-gray-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.successFeeLabel} ({matterCurrency})</label><input type="number" step="0.01" value={successFee||''} onChange={e=>setSuccessFee(parseFloat(e.target.value)||0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0"/></div>
+              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.successFeeDescLabel}</label><input type="text" value={successFeeDesc} onChange={e=>setSuccessFeeDesc(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-3 py-2 font-medium text-gray-600">{L.lawyer}</th>
-                <th className="text-left px-3 py-2 font-medium text-gray-600">{L.desc}</th>
-                <th className="text-right px-3 py-2 font-medium text-gray-600">{L.billed}</th>
-                <th className="text-right px-3 py-2 font-medium text-gray-600">{L.rate}</th>
-                <th className="text-right px-3 py-2 font-medium text-gray-600">{L.subtotal}</th>
-              </tr></thead>
-              <tbody>
-                {reviewEntries.map((e,i)=>(
-                  <tr key={e.id} className="border-b border-gray-50">
-                    <td className="px-3 py-2 text-gray-600">{e.users?.full_name}</td>
-                    <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{e.entry_date} — {e.description}</td>
-                    <td className="px-3 py-2 text-right font-medium">{hrsToHM(itemEdits[i]?.hours_billed||0)}</td>
-                    <td className="px-3 py-2 text-right">{itemEdits[i]?.rate?.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right font-medium">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {reviewExpenses.length>0&&(
-            <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div>
-              <table className="w-full text-sm"><tbody>
-                {reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50">
-                  <td className="px-4 py-2 text-gray-600">{e.expense_date}</td><td className="px-4 py-2 text-gray-600">{e.category}</td>
-                  <td className="px-4 py-2 text-right font-medium">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
-                </tr>)}
-              </tbody></table>
-            </div>
-          )}
           <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 space-y-2 max-w-sm ml-auto">
             <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalHrs}</span><span className="font-medium">{hrsToHM(totalHrs)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalAmt}</span><span className="font-medium">{totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalAmt}</span><span className="font-medium">{matterCurrency} {totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
             <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalExp}</span><span className="font-medium">{totalExp.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
-            <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{(totalAmt+totalExp).toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+            {discount>0&&<div className="flex justify-between text-sm"><span className="text-red-600">{L.discountLabel}</span><span className="font-medium text-red-600">-{matterCurrency} {discount.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
+            {successFee>0&&<div className="flex justify-between text-sm"><span className="text-green-600">{L.successFeeLabel}</span><span className="font-medium text-green-600">+{matterCurrency} {successFee.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
+            <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
           </div>
-          {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-          <div className="mt-4 flex justify-between">
-            <button onClick={goBackToReview} className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
-            <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
-          </div>
+        </>)}
+        {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        <div className="mt-4 flex justify-end"><button onClick={()=>setStep('preview')} disabled={reviewEntries.length===0&&successFee===0} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{L.next} →</button></div>
+      </div>)
+    }
+
+    if(step==='preview'){
+      const matterCurrency=matters.find(m=>m.id===selMatter)?.rate_currency||'USD'
+      return(<div>
+        <div className="flex items-center justify-between mb-4"><div><h2 className="text-xl font-semibold">{L.preview}</h2><p className="text-sm text-gray-500">{matters.find(m=>m.id===selMatter)?.title} — {dateFrom} → {dateTo}</p></div></div>
+        {reviewEntries.length>0&&(<div className="bg-white rounded-xl border border-gray-200 overflow-x-auto"><table className="w-full text-sm">
+          <thead><tr className="border-b border-gray-100 bg-gray-50"><th className="text-left px-3 py-2 font-medium text-gray-600">{L.lawyer}</th><th className="text-left px-3 py-2 font-medium text-gray-600">{L.desc}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.billed}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.rate}</th><th className="text-right px-3 py-2 font-medium text-gray-600">{L.subtotal}</th></tr></thead>
+          <tbody>{reviewEntries.map((e,i)=>(<tr key={e.id} className="border-b border-gray-50"><td className="px-3 py-2 text-gray-600">{e.users?.full_name}</td><td className="px-3 py-2 text-gray-600 max-w-xs truncate">{e.entry_date} — {e.description}</td><td className="px-3 py-2 text-right font-medium">{hrsToHM(itemEdits[i]?.hours_billed||0)}</td><td className="px-3 py-2 text-right">{itemEdits[i]?.rate?.toLocaleString()}</td><td className="px-3 py-2 text-right font-medium">{((itemEdits[i]?.hours_billed||0)*(itemEdits[i]?.rate||0)).toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>))}</tbody></table></div>)}
+        {reviewExpenses.length>0&&(<div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto"><div className="px-4 py-3 bg-gray-50 border-b border-gray-100 font-medium text-sm text-gray-700">{L.expenses}</div><table className="w-full text-sm"><tbody>{reviewExpenses.map(e=><tr key={e.id} className="border-b border-gray-50"><td className="px-4 py-2 text-gray-600">{e.expense_date}</td><td className="px-4 py-2 text-gray-600">{e.category}</td><td className="px-4 py-2 text-right font-medium">{e.currency!==matterCurrency?<span className="text-amber-600">{e.currency} </span>:''}{e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div>)}
+        <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 space-y-2 max-w-sm ml-auto">
+          <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalHrs}</span><span className="font-medium">{hrsToHM(totalHrs)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalAmt}</span><span className="font-medium">{matterCurrency} {totalAmt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-500">{L.totalExp}</span><span className="font-medium">{totalExp.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
+          {discount>0&&<div className="flex justify-between text-sm"><span className="text-red-600">{L.discountLabel}</span><span className="font-medium text-red-600">-{matterCurrency} {discount.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
+          {successFee>0&&<div className="flex justify-between text-sm"><span className="text-green-600">{L.successFeeLabel}</span><span className="font-medium text-green-600">+{matterCurrency} {successFee.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
+          <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </div>
-      )
+        <div className="mt-4 flex justify-between">
+          <button onClick={()=>setStep('review')} className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
+          <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
+        </div>
+      </div>)
     }
   }
 
-  // VIEW TAB (default)
-  const STATUSES=['draft','sent','approved','invoice_issued','paid','unpaid']
-  return(
-    <div>
-      <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
-        <button className="pb-3 text-sm font-medium text-vexa-600 border-b-2 border-vexa-600">{L.view}</button>
-        <button onClick={()=>{setTab('create');setStep('select');setSelClient('');setSelMatter('');setDateFrom('');setDateTo('');setError('')}} className="pb-3 text-sm text-gray-500 hover:text-gray-700">{L.create}</button>
-      </div>
-      <div className="flex gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
-          <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm"/>
-        </div>
-        <select value={filterClient} onChange={e=>setFilterClient(e.target.value)} className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white">
-          <option value="">{L.allClients}</option>
-          {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white">
-          <option value="all">{L.all}</option>
-          {STATUSES.map(s=><option key={s} value={s}>{statusLabel(s)}</option>)}
-        </select>
-      </div>
-      {loading?<div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
-      :filtered.length===0?<div className="mt-12 text-center"><FileText size={28} className="text-gray-400 mx-auto mb-3"/><p className="text-gray-900 font-medium">{L.none}</p></div>
-      :(
-        <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">{L.period}</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">{L.status}</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">{L.grand}</th>
-              <th className="w-10"></th>
-            </tr></thead>
-            <tbody>
-              {filtered.map(t=>(
-                <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer" onClick={()=>setDetail(t)}>
-                  <td className="px-4 py-3"><div className="font-medium text-gray-900">{t.matters?.title}</div><div className="text-xs text-gray-400">{t.matters?.clients?.name}</div></td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{t.period_start} → {t.period_end}</td>
-                  <td className="px-4 py-3"><span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(t.status)}`}>{statusLabel(t.status)}</span></td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-900">{(t.total_billed_amount+t.total_expenses).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
-                  <td className="px-4 py-3"><ChevronRight size={16} className="text-gray-300"/></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+  // VIEW TAB
+  const ALL_STATUSES=['draft','issued','sent','approved','invoice_issued','paid','unpaid']
+  return(<div>
+    <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
+      <button className="pb-3 text-sm font-medium text-vexa-600 border-b-2 border-vexa-500">{L.view}</button>
+      <button onClick={()=>{setTab('create');setStep('select');setSelClient('');setSelMatter('');setDateFrom('');setDateTo('');setError('');setDiscount(0);setDiscountDesc('');setSuccessFee(0);setSuccessFeeDesc('')}} className="pb-3 text-sm text-gray-500 hover:text-gray-700">{L.create}</button>
     </div>
-  )
+    <div className="flex gap-3 flex-wrap">
+      <div className="relative flex-1 min-w-[200px]"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/><input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder={L.search} className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm"/></div>
+      <select value={filterClient} onChange={e=>setFilterClient(e.target.value)} className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.allClients}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+      <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"><option value="all">{L.all}</option>{ALL_STATUSES.map(s=><option key={s} value={s}>{statusLabel(s)}</option>)}</select>
+    </div>
+    {loading?<div className="mt-8 text-center text-sm text-gray-500">Loading...</div>
+    :filtered.length===0?<div className="mt-12 text-center"><FileText size={28} className="text-gray-400 mx-auto mb-3"/><p className="text-gray-900 font-medium">{L.none}</p></div>
+    :(<div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto"><table className="w-full text-sm">
+      <thead><tr className="border-b border-gray-100 bg-gray-50">
+        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.code}</th>
+        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.matter}</th>
+        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.period}</th>
+        <th className="text-left px-4 py-3 font-medium text-gray-600">{L.status}</th>
+        <th className="text-right px-4 py-3 font-medium text-gray-600">{L.grand}</th>
+        <th className="w-10"></th>
+      </tr></thead>
+      <tbody>{filtered.map(t=>(<tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer" onClick={()=>setDetail(t)}>
+        <td className="px-4 py-3 font-mono text-sm text-gray-500">{t.code}</td>
+        <td className="px-4 py-3"><div className="font-medium text-gray-900">{t.matters?.title}</div><div className="text-xs text-gray-400">{t.matters?.clients?.name}</div></td>
+        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{t.period_start} → {t.period_end}</td>
+        <td className="px-4 py-3"><span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(t.status)}`}>{statusLabel(t.status)}</span></td>
+        <td className="px-4 py-3 text-right font-medium text-gray-900">{grandTotalForDetail(t).toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+        <td className="px-4 py-3"><ChevronRight size={16} className="text-gray-300"/></td>
+      </tr>))}</tbody>
+    </table></div>)}
+  </div>)
 }

@@ -146,13 +146,15 @@ export default function TimePage(){
 
   async function handleSharedAction(id:string,accept:boolean){
     const sb=createClient()
+    const entry=pendingShared.find(s=>s.id===id)
+    if(!entry){return}
     if(accept){
-      const entry=pendingShared.find(s=>s.id===id)
-      if(entry){
-        await sb.from('time_entries').insert({entry_date:entry.entry_date,matter_id:entry.matter_id,description:entry.description,hours_logged:entry.hours_logged,is_billable:true,user_id:userId,firm_id:firmId,authorized_by:null})
-      }
+      // Create entry for the accepting user (to_user)
+      await sb.from('time_entries').insert({entry_date:entry.entry_date,matter_id:entry.matter_id,description:entry.description,hours_logged:entry.hours_logged,is_billable:true,user_id:userId,firm_id:firmId,authorized_by:null})
       await sb.from('shared_time_entries').update({status:'accepted'}).eq('id',id)
     }else{
+      // Rejected: create entry for the from_user (the one who originally logged it)
+      await sb.from('time_entries').insert({entry_date:entry.entry_date,matter_id:entry.matter_id,description:entry.description,hours_logged:entry.hours_logged,is_billable:true,user_id:entry.from_user_id,firm_id:firmId,authorized_by:null})
       await sb.from('shared_time_entries').update({status:'rejected'}).eq('id',id)
     }
     loadData()
@@ -175,8 +177,9 @@ export default function TimePage(){
 
   // Loading language labels
   const mLang=selectedMatter?.loading_language||'es'
-  const descLabel=mLang==='es'?'Descripción del trabajo (máx. 1000)':'Work description (max 1000)'
-  const descPlaceholder=mLang==='es'?'Describí el trabajo realizado...':'Describe the work done...'
+  const langFlags:Record<string,string>={es:'🇪🇸',en:'🇺🇸',pt:'🇧🇷'}
+  const descLabel=mLang==='pt'?'Descrição do trabalho (máx. 1000)':mLang==='en'?'Work description (max 1000)':'Descripción del trabajo (máx. 1000)'
+  const descPlaceholder=mLang==='pt'?'Descreva o trabalho realizado...':mLang==='en'?'Describe the work done...':'Describí el trabajo realizado...'
 
   const L={
     insert:es?'Insertar':'Insert',editing_:es?'Guardar cambio':'Save edit',cancel:es?'Cancelar':'Cancel',
@@ -260,7 +263,7 @@ export default function TimePage(){
             <div className="space-y-3">
               <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.client}</label>
                 <select value={selClient} onChange={e=>{setSelClient(e.target.value);setSelMatter('')}} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.selectClient}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.matter}</label>
+              <div><label className="block text-xs font-medium text-gray-600 mb-1">{L.matter} {selectedMatter&&<span className="ml-1">{langFlags[mLang]||'🇪🇸'}</span>}</label>
                 <select value={selMatter} onChange={e=>setSelMatter(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="">{L.selectMatter}</option>{filteredMatters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
               {/* Admin: matter reassign when editing */}
               {editing&&isAdmin&&(
@@ -282,7 +285,7 @@ export default function TimePage(){
               )}
             </div>
             <div className="flex flex-col">
-              <label className="block text-xs font-medium text-gray-600 mb-1">{descLabel}</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{langFlags[mLang]||'🇪🇸'} {descLabel}</label>
               <textarea value={formDesc} onChange={e=>setFormDesc(e.target.value.slice(0,1000))} className="flex-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none min-h-[120px]" placeholder={descPlaceholder}/>
               <div className="text-right text-xs text-gray-400 mt-1">{formDesc.length}/1000</div>
             </div>

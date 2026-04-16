@@ -279,6 +279,34 @@ export default function StatsPage(){
               </div>
             </div>
           )}
+          {/* REVENUE BAR CHART */}
+          {tab==='lawyers'&&userStats.length>0&&(
+            <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">{es?'Ingresos por abogado':'Revenue per lawyer'}</h3>
+              <div className="space-y-2">
+                {userStats.filter(u=>u.revenue>0).map(u=>{
+                  const maxRev=Math.max(...userStats.map(s=>s.revenue))
+                  const pct=maxRev>0?Math.round(u.revenue/maxRev*100):0
+                  return(
+                    <div key={u.user_id} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-600 w-28 truncate">{u.full_name}</span>
+                      <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-vexa-500 rounded-full transition-all" style={{width:`${pct}%`}}></div>
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 w-20 text-right">{u.revenue.toLocaleString(undefined,{minimumFractionDigits:0})}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* REQUEST CUSTOM REPORT */}
+          <div className="mt-8 bg-gradient-to-r from-vexa-600 to-vexa-500 rounded-2xl p-6 text-white">
+            <h3 className="font-semibold text-lg">{es?'¿Necesitás estadísticas personalizadas?':'Need custom statistics?'}</h3>
+            <p className="text-sm text-white/80 mt-2 max-w-lg">{es?'Podemos crear reportes a medida para tu estudio: compensación de socios, rentabilidad por área de práctica, tendencias mensuales, y más.':'We can create custom reports for your firm: partner compensation, practice area profitability, monthly trends, and more.'}</p>
+            <a href="mailto:info@vexa.app?subject=Custom%20Report%20Request" className="inline-block mt-4 px-5 py-2.5 bg-white text-vexa-600 rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors">{es?'Solicitar reporte personalizado':'Request custom report'}</a>
+          </div>
         </>
       )}
     </div>

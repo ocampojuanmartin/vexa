@@ -11,10 +11,10 @@ type Expense = {
   matters?: any; users?: any
 }
 type Matter = { id: string; title: string; clients?: any }
-type Form = { expense_date: string; matter_id: string; category: string; amount: string; currency: string; is_reimbursable: boolean }
+type Form = { expense_date: string; matter_id: string; category: string; amount: string; currency: string }
 
 const CURRENCIES = ['ARS','USD','EUR','BRL']
-const emptyForm = (): Form => ({ expense_date: new Date().toISOString().slice(0,10), matter_id:'', category:'', amount:'', currency:'ARS', is_reimbursable:false })
+const emptyForm = (): Form => ({ expense_date: new Date().toISOString().slice(0,10), matter_id:'', category:'', amount:'', currency:'ARS',  })
 
 export default function ExpensesPage() {
   const { locale } = useI18n()
@@ -57,7 +57,7 @@ export default function ExpensesPage() {
   function openEdit(e: Expense) {
     if (e.is_locked) return
     setEditing(e); setFile(null)
-    setForm({ expense_date:e.expense_date, matter_id:e.matter_id, category:e.category, amount:e.amount.toString(), currency:e.currency, is_reimbursable:e.is_reimbursable })
+    setForm({ expense_date:e.expense_date, matter_id:e.matter_id, category:e.category, amount:e.amount.toString(), currency:e.currency })
     setError(''); setShowModal(true)
   }
 
@@ -83,7 +83,7 @@ export default function ExpensesPage() {
       setUploading(false)
     }
 
-    const payload = { expense_date:form.expense_date, matter_id:form.matter_id, category:form.category, amount:amt, currency:form.currency, is_reimbursable:form.is_reimbursable, receipt_url:receiptUrl, user_id:userId, firm_id:firmId }
+    const payload = { expense_date:form.expense_date, matter_id:form.matter_id, category:form.category, amount:amt, currency:form.currency, receipt_url:receiptUrl, user_id:userId, firm_id:firmId }
     if (editing) { await sb.from('expenses').update(payload).eq('id', editing.id) }
     else { await sb.from('expenses').insert(payload) }
     setSaving(false); setShowModal(false); loadData()
@@ -96,7 +96,7 @@ export default function ExpensesPage() {
   const L = {
     title: es?'Gastos':'Expenses', new: es?'Nuevo gasto':'New expense', edit: es?'Editar gasto':'Edit expense',
     date: es?'Fecha':'Date', matter: es?'Asunto':'Matter', cat: es?'Descripción':'Description',
-    amount: es?'Monto':'Amount', curr: es?'Moneda':'Currency', reimb: es?'Reembolsable':'Reimbursable',
+    amount: es?'Monto':'Amount', curr: es?'Moneda':'Currency', 
     receipt: es?'Comprobante':'Receipt', attach: es?'Adjuntar archivo':'Attach file',
     save: es?'Guardar':'Save', cancel: es?'Cancelar':'Cancel', search: es?'Buscar...':'Search...',
     none: es?'No hay gastos':'No expenses yet', select: es?'Seleccionar':'Select',
@@ -136,7 +136,7 @@ export default function ExpensesPage() {
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{e.expense_date}</td>
                     <td className="px-4 py-3"><div className="font-medium text-gray-900">{e.matters?.title}</div><div className="text-xs text-gray-400">{e.matters?.clients?.name}</div></td>
                     {canSeeAll && <td className="px-4 py-3 text-gray-600">{e.users?.full_name}</td>}
-                    <td className="px-4 py-3 text-gray-600">{e.category}{e.is_reimbursable && <span className="ml-1 text-xs text-green-600">(R)</span>}</td>
+                    <td className="px-4 py-3 text-gray-600">{e.category}</td>
                     <td className="px-4 py-3 text-right font-medium text-gray-900">{e.currency} {e.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
                     <td className="px-4 py-3 flex gap-1 justify-end">
                       {e.receipt_url && <a href={e.receipt_url} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-gray-100 text-gray-400"><ExternalLink size={14}/></a>}
@@ -168,17 +168,12 @@ export default function ExpensesPage() {
                 <select value={form.matter_id} onChange={e=>setForm({...form,matter_id:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                   <option value="">{L.select}</option>
                   {matters.map(m=><option key={m.id} value={m.id}>{m.title}{m.clients?.name?` — ${m.clients.name}`:''}</option>)}</select></div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.amount} *</label>
                   <input type="number" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00"/></div>
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.curr}</label>
                   <select value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     {CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-                <div className="flex items-end pb-1">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={form.is_reimbursable} onChange={e=>setForm({...form,is_reimbursable:e.target.checked})} className="rounded border-gray-300"/>
-                    <span className="text-sm text-gray-700">{L.reimb}</span></label>
-                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{L.receipt}</label>
