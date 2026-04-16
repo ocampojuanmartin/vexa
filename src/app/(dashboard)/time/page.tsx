@@ -10,10 +10,10 @@ type TimeEntry = {
   is_billable:boolean; is_locked:boolean; matter_id:string; user_id:string
   authorized_by:string|null; matters?:any; users?:any
 }
-type Matter = { id:string; title:string; is_billable?:boolean; loading_language?:string; requires_authorization?:boolean; clients?:any }
+type Matter = { id:string; title:string; client_id?:string; is_billable?:boolean; loading_language?:string; requires_authorization?:boolean; clients?:any }
 type ClientOption = { id:string; name:string }
 type UserOption = { id:string; full_name:string }
-type SharedEntry = { id:string; entry_date:string; hours_logged:number; description:string; from_user_id:string; matter_id:string; status:string; matters?:any; users?:any }
+type SharedEntry = { id:string; entry_date:string; hours_logged:number; description:string; from_user_id:string; matter_id:string; status:string; authorized_by:string|null; matters?:any; users?:any }
 
 function daysInMonth(y:number,m:number){return new Date(y,m+1,0).getDate()}
 function fmtDate(y:number,m:number,d:number){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
@@ -79,14 +79,14 @@ export default function TimePage(){
     if(data)setAllEntries(data as any)
     const[c,m,u]=await Promise.all([
       sb.from('clients').select('id, name').order('name'),
-      sb.from('matters').select('id, title, is_billable, loading_language, requires_authorization, clients(name)').eq('status','active').order('title'),
+      sb.from('matters').select('id, title, client_id, is_billable, loading_language, requires_authorization, clients(name)').eq('status','active').order('title'),
       sb.from('users').select('id, full_name').eq('is_active',true).order('full_name'),
     ])
     if(c.data)setClients(c.data)
     if(m.data)setMatters(m.data as any)
     if(u.data)setAllUsers(u.data)
-    // Load pending shared entries for this user
-    const{data:shared}=await sb.from('shared_time_entries').select('*, matters(title), users!shared_time_entries_from_user_id_fkey(full_name)').eq('to_user_id',user.id).eq('status','pending')
+    // Load pending shared entries for this user (include authorized_by).
+    const{data:shared}=await sb.from('shared_time_entries').select('id, entry_date, hours_logged, description, from_user_id, matter_id, status, authorized_by, matters(title), users!shared_time_entries_from_user_id_fkey(full_name)').eq('to_user_id',user.id).eq('status','pending')
     if(shared)setPendingShared(shared as any)
     setLoading(false)
   },[year,month])
@@ -98,7 +98,7 @@ export default function TimePage(){
   function nextMonth(){if(month===11){setMonth(0);setYear(year+1)}else setMonth(month+1);setSelDay(1)}
   function getDayHours(day:number){const d=fmtDate(year,month,day);return allEntries.filter(e=>e.entry_date===d).reduce((s,e)=>s+e.hours_logged,0)}
 
-  const filteredMatters=selClient?matters.filter(m=>m.clients?.name&&clients.find(c=>c.id===selClient)?.name===m.clients.name):matters
+  const filteredMatters=selClient?matters.filter(m=>m.client_id===selClient):matters
 
   function resetForm(){setSelClient('');setSelMatter('');setFormHrs(0);setFormMins(0);setFormDesc('');setFormAuth('');setFormShareWith('');setEditing(null);setEditMatter('');setError('')}
 
@@ -147,14 +147,18 @@ export default function TimePage(){
   async function handleSharedAction(id:string,accept:boolean){
     const sb=createClient()
     const entry=pendingShared.find(s=>s.id===id)
-    if(!entry){return}
+    if(!entry)return
     if(accept){
-      // Create entry for the accepting user (to_user)
-      await sb.from('time_entries').insert({entry_date:entry.entry_date,matter_id:entry.matter_id,description:entry.description,hours_logged:entry.hours_logged,is_billable:true,user_id:userId,firm_id:firmId,authorized_by:null})
+      // Create entry for the accepting user (to_user), preserving matter billability and authorization.
+      const matter=matters.find(m=>m.id===entry.matter_id)
+      await sb.from('time_entries').insert({
+        entry_date:entry.entry_date,matter_id:entry.matter_id,description:entry.description,
+        hours_logged:entry.hours_logged,is_billable:matter?.is_billable!==false,
+        user_id:userId,firm_id:firmId,authorized_by:entry.authorized_by||null,
+      })
       await sb.from('shared_time_entries').update({status:'accepted'}).eq('id',id)
     }else{
-      // Rejected: create entry for the from_user (the one who originally logged it)
-      await sb.from('time_entries').insert({entry_date:entry.entry_date,matter_id:entry.matter_id,description:entry.description,hours_logged:entry.hours_logged,is_billable:true,user_id:entry.from_user_id,firm_id:firmId,authorized_by:null})
+      // Rejected: just mark as rejected. The original user can re-log on their own account if needed.
       await sb.from('shared_time_entries').update({status:'rejected'}).eq('id',id)
     }
     loadData()

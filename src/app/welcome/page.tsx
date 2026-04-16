@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, FileText, BarChart3, Users, Shield, Globe, ChevronRight, Check, Menu, X } from 'lucide-react'
+import { Clock, FileText, BarChart3, Users, Shield, Globe, Check, Menu, X } from 'lucide-react'
 
 export default function LandingPage() {
   const [lang, setLang] = useState<'es'|'en'>('en')
@@ -32,10 +32,10 @@ export default function LandingPage() {
       title: es ? 'Todo lo que tu estudio necesita' : 'Everything your firm needs',
       sub: es ? 'Diseñado específicamente para estudios jurídicos.' : 'Built specifically for law firms.',
       items: [
-        { icon: Clock, title: es?'Carga de horas':'Time tracking', desc: es?'Calendario visual con carga por día, cronómetro integrado, horas y minutos. Cada abogado carga sus horas y el socio las revisa.':'Visual calendar with daily entry, built-in timer, hours and minutes. Associates log, partners review.' },
-        { icon: FileText, title: es?'Timesheets y facturación':'Timesheets & billing', desc: es?'Generá timesheets por asunto y período. Ajustá las horas antes de enviar al cliente. Seguimiento completo: borrador → enviado → aprobado → facturado → cobrado.':'Generate timesheets per matter and period. Adjust hours before sending. Full tracking: draft → sent → approved → invoiced → paid.' },
+        { icon: Clock, title: es?'Carga de horas':'Time tracking', desc: es?'Calendario visual por día con horas y minutos. Cada abogado carga sus horas y el socio las revisa. Soporte multi-idioma en la descripción del trabajo.':'Visual daily calendar with hours and minutes. Associates log, partners review. Multi-language work descriptions.' },
+        { icon: FileText, title: es?'Timesheets y facturación':'Timesheets & billing', desc: es?'Generá timesheets por asunto y período. Ajustá horas y tarifas antes de enviar. Seguimiento completo: borrador → emitido → enviado → aprobado → facturado → cobrado.':'Generate timesheets per matter and period. Adjust hours and rates before sending. Full tracking: draft → issued → sent → approved → invoiced → paid.' },
         { icon: BarChart3, title: es?'Estadísticas para socios':'Partner statistics', desc: es?'Horas logueadas vs facturadas, ratio de facturación, ingresos por abogado, tasa de cobro, originación de clientes. Todo filtrable por período.':'Logged vs billed hours, billing ratio, revenue per lawyer, collection rate, client origination. All filterable by period.' },
-        { icon: Users, title: es?'Clientes y asuntos':'Clients & matters', desc: es?'Directorio de clientes con sus asuntos. Originación por socio con porcentaje. Abogados asignados por asunto con tarifa personalizada.':'Client directory with matters. Partner origination with splits. Assigned lawyers per matter with custom rates.' },
+        { icon: Users, title: es?'Clientes y asuntos':'Clients & matters', desc: es?'Directorio de clientes con sus asuntos. Originación y liderazgo por socio con porcentaje. Tarifas por categoría o tarifa flat por asunto, con tope de horas y descuentos automáticos.':'Client directory with matters. Origination and lead-partner splits. Per-category or flat rates per matter, with hour caps and automatic discounts.' },
         { icon: Shield, title: es?'Control de acceso':'Access control', desc: es?'Tres roles: admin, socio, asociado. El admin define qué módulos ve cada usuario. Los asociados solo ven sus propios datos.':'Three roles: admin, partner, associate. Admin defines module access per user. Associates see only their own data.' },
         { icon: Globe, title: es?'Español e inglés':'Spanish & English', desc: es?'Interfaz completamente bilingüe. Cada usuario elige su idioma. Listo para estudios con operaciones en Latinoamérica y Estados Unidos.':'Fully bilingual interface. Each user picks their language. Ready for firms with Latin American and US operations.' },
       ]
@@ -77,7 +77,7 @@ export default function LandingPage() {
             <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} className="text-sm text-gray-400 hover:text-gray-600">{lang === 'es' ? 'EN' : 'ES'}</button>
             <Link href="/login" className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.nav.login}</Link>
           </div>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2"><Menu size={20} /></button>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2" aria-label={menuOpen ? 'Close menu' : 'Open menu'}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         </div>
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 space-y-3">

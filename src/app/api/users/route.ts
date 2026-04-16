@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   if (!profile || profile.role !== 'admin') return NextResponse.json({ error: 'Not admin' }, { status: 403 })
 
   const body = await request.json()
-  const { email, password, full_name, role, hourly_rate, expected_monthly_hours, module_permissions, category_id } = body
+  const { email, password, full_name, role, expected_monthly_hours, module_permissions, category_id } = body
 
   // Use service role to create user without affecting current session
   const adminSb = createClient(
@@ -29,12 +29,14 @@ export async function POST(request: Request) {
 
   const { error: dbErr } = await adminSb.from('users').insert({
     id: authData.user.id, firm_id: profile.firm_id,
-    email, full_name, role, hourly_rate: hourly_rate || 0,
+    email, full_name, role,
     expected_monthly_hours: expected_monthly_hours || 160,
     module_permissions: module_permissions || {},
     category_id: category_id || null,
   })
   if (dbErr) {
+    // Roll back the auth user so we don't leave an orphan account.
+    await adminSb.auth.admin.deleteUser(authData.user.id).catch(() => {})
     return NextResponse.json({ error: dbErr.message }, { status: 400 })
   }
 

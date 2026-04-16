@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/i18n/context'
-import { Plus, X, Pencil, GripVertical } from 'lucide-react'
+import { Plus, X, Pencil } from 'lucide-react'
 
 type Category = { id: string; name: string; default_rate: number; sort_order: number }
 type DemoRequest = { id: string; full_name: string; email: string; firm_name: string; firm_size: string; created_at: string }
