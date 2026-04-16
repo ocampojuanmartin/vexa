@@ -68,41 +68,41 @@ export default function UsersPage() {
 
   async function toggleActive(u: UserRecord) { const sb = createClient(); await sb.from('users').update({ is_active:!u.is_active }).eq('id', u.id); loadData() }
 
-  const roleIcon = (r:string) => r==='admin'?<ShieldCheck size={14} className="text-vexa-600"/>:r==='partner'?<Shield size={14} className="text-purple-600"/>:<User size={14} className="text-ink-500"/>
+  const roleIcon = (r:string) => r==='admin'?<ShieldCheck size={14} className="text-vexa-600"/>:r==='partner'?<Shield size={14} className="text-purple-600"/>:<User size={14} className="text-gray-400"/>
   const roleLabel = (r:string) => (es?{admin:'Administrador',partner:'Socio',associate:'Asociado'}:{admin:'Admin',partner:'Partner',associate:'Associate'})[r]||r
   const modLabel = (m:string) => (es?{clients:'Clientes & Asuntos',time:'Horas',expenses:'Gastos',timesheets:'Timesheets',stats:'Estadísticas'}:{clients:'Clients & Matters',time:'Time',expenses:'Expenses',timesheets:'Timesheets',stats:'Stats'})[m]||m
   const catName = (id:string|null) => categories.find(c=>c.id===id)?.name || '—'
 
-  if (!isAdmin) return <div className="text-center text-sm text-ink-500 mt-12">{es?'Sin acceso':'No access'}</div>
+  if (!isAdmin) return <div className="text-center text-sm text-gray-500 mt-12">{es?'Sin acceso':'No access'}</div>
 
   const L = { title:es?'Usuarios':'Users', new:es?'Nuevo usuario':'New user', edit:es?'Editar usuario':'Edit user', name:es?'Nombre completo':'Full name', email:'Email', password:es?'Contraseña':'Password', role:es?'Rol':'Role', expected:es?'Horas esperadas/mes':'Expected hrs/month', modules:es?'Módulos habilitados':'Enabled modules', category:es?'Categoría':'Category', save:es?'Guardar':'Save', cancel:es?'Cancelar':'Cancel', active:es?'Activo':'Active', deactivate:es?'Desactivar':'Deactivate', activate:es?'Activar':'Activate', select:es?'Sin categoría':'No category' }
 
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-ink-900 tracking-tight">{L.title}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700"><Plus size={16}/>{L.new}</button>
+        <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600"><Plus size={16}/>{L.new}</button>
       </div>
-      {loading ? <div className="mt-8 text-center text-sm text-ink-500">Loading...</div> : (
-        <div className="mt-4 bg-white rounded-xl border border-canvas-200 overflow-x-auto">
+      {loading ? <div className="mt-8 text-center text-sm text-gray-500">Loading...</div> : (
+        <div className="mt-4 bg-white rounded-xl border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-canvas-100 bg-canvas-100">
-              <th className="text-left px-4 py-3 font-medium text-ink-700">{L.name}</th>
-              <th className="text-left px-4 py-3 font-medium text-ink-700">{L.role}</th>
-              <th className="text-left px-4 py-3 font-medium text-ink-700">{L.category}</th>
-              <th className="text-center px-4 py-3 font-medium text-ink-700">{L.active}</th>
+            <thead><tr className="border-b border-gray-100 bg-gray-50">
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{L.name}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{L.role}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{L.category}</th>
+              <th className="text-center px-4 py-3 font-medium text-gray-600">{L.active}</th>
               <th className="w-20"></th>
             </tr></thead>
             <tbody>
               {users.map(u => (
-                <tr key={u.id} className={`border-b border-canvas-100 ${!u.is_active?'opacity-50':''}`}>
-                  <td className="px-4 py-3"><div className="font-medium text-ink-900">{u.full_name}</div><div className="text-xs text-ink-500">{u.email}</div></td>
+                <tr key={u.id} className={`border-b border-gray-50 ${!u.is_active?'opacity-50':''}`}>
+                  <td className="px-4 py-3"><div className="font-medium text-gray-900">{u.full_name}</div><div className="text-xs text-gray-400">{u.email}</div></td>
                   <td className="px-4 py-3"><span className="inline-flex items-center gap-1.5 capitalize">{roleIcon(u.role)}{roleLabel(u.role)}</span></td>
-                  <td className="px-4 py-3 text-ink-700">{catName(u.category_id)}</td>
+                  <td className="px-4 py-3 text-gray-600">{catName(u.category_id)}</td>
                   <td className="px-4 py-3 text-center"><span className={`inline-block w-2 h-2 rounded-full ${u.is_active?'bg-green-500':'bg-gray-300'}`}></span></td>
                   <td className="px-4 py-3 flex gap-1 justify-end">
-                    <button onClick={()=>openEdit(u)} className="p-1.5 rounded-md hover:bg-canvas-100 text-ink-500"><Pencil size={15}/></button>
-                    <button onClick={()=>toggleActive(u)} className="p-1.5 rounded-md hover:bg-canvas-100 text-ink-500"><UserCog size={15}/></button>
+                    <button onClick={()=>openEdit(u)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"><Pencil size={15}/></button>
+                    <button onClick={()=>toggleActive(u)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400"><UserCog size={15}/></button>
                   </td>
                 </tr>
               ))}
@@ -115,40 +115,40 @@ export default function UsersPage() {
           <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-xl mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">{editing?L.edit:L.new}</h2>
-              <button onClick={()=>setShowModal(false)} className="p-1 hover:bg-canvas-100 rounded-md"><X size={18} className="text-ink-500"/></button>
+              <button onClick={()=>setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-md"><X size={18} className="text-gray-400"/></button>
             </div>
             <div className="space-y-4">
-              <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.name} *</label>
-                <input type="text" value={form.full_name} onChange={e=>setForm({...form,full_name:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/></div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.email} *</label>
-                <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} disabled={!!editing} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm disabled:bg-canvas-100"/></div>
-              {!editing && <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.password} *</label>
-                <input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm" minLength={6}/></div>}
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.name} *</label>
+                <input type="text" value={form.full_name} onChange={e=>setForm({...form,full_name:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/></div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.email} *</label>
+                <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} disabled={!!editing} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-50"/></div>
+              {!editing && <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.password} *</label>
+                <input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" minLength={6}/></div>}
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.role}</label>
-                  <select value={form.role} onChange={e=>setForm({...form,role:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white">
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.role}</label>
+                  <select value={form.role} onChange={e=>setForm({...form,role:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="associate">{roleLabel('associate')}</option><option value="partner">{roleLabel('partner')}</option><option value="admin">{roleLabel('admin')}</option></select></div>
-                <div><label className="block text-sm font-medium text-ink-700 mb-1">{L.category}</label>
-                  <select value={form.category_id} onChange={e=>setForm({...form,category_id:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm bg-white">
+                <div><label className="block text-sm font-medium text-gray-700 mb-1">{L.category}</label>
+                  <select value={form.category_id} onChange={e=>setForm({...form,category_id:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="">{L.select}</option>
                     {categories.map(c=><option key={c.id} value={c.id}>{c.name} (${c.default_rate}/hr)</option>)}</select></div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1">{L.expected}</label>
-                <input type="number" value={form.expected_monthly_hours} onChange={e=>setForm({...form,expected_monthly_hours:e.target.value})} className="w-full px-3 py-2 border border-canvas-200 rounded-lg text-sm"/>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{L.expected}</label>
+                <input type="number" value={form.expected_monthly_hours} onChange={e=>setForm({...form,expected_monthly_hours:e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/>
               </div>
               {form.role !== 'admin' && (
-                <div><label className="block text-sm font-medium text-ink-700 mb-2">{L.modules}</label>
+                <div><label className="block text-sm font-medium text-gray-700 mb-2">{L.modules}</label>
                   <div className="grid grid-cols-2 gap-1">
-                    {MODULES.map(m=><label key={m} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-canvas-100 cursor-pointer">
-                      <input type="checkbox" checked={form.modules[m]!==false} onChange={e=>setForm({...form,modules:{...form.modules,[m]:e.target.checked}})} className="rounded border-canvas-200"/>
-                      <span className="text-sm text-ink-700">{modLabel(m)}</span></label>)}</div></div>
+                    {MODULES.map(m=><label key={m} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                      <input type="checkbox" checked={form.modules[m]!==false} onChange={e=>setForm({...form,modules:{...form.modules,[m]:e.target.checked}})} className="rounded border-gray-300"/>
+                      <span className="text-sm text-gray-700">{modLabel(m)}</span></label>)}</div></div>
               )}
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-ink-700 hover:bg-canvas-100 rounded-lg">{L.cancel}</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 disabled:opacity-50">{saving?'...':L.save}</button>
+              <button onClick={()=>setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{L.cancel}</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>
             </div>
           </div>
         </div>

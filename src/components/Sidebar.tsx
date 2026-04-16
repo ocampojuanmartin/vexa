@@ -53,6 +53,7 @@ export default function Sidebar() {
     loadProfile()
   }, [])
 
+  // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   async function handleLogout() {
@@ -79,38 +80,35 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <>
-      <nav className="flex-1 py-6 px-3 space-y-0.5 overflow-y-auto">
+      {/* Nav */}
+      <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
         {filteredNav.map((item) => {
           const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
           const Icon = item.icon
           return (
             <button key={item.href} onClick={() => navigate(item.href)}
-              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-[13px] tracking-wide transition-colors ${
-                isActive
-                  ? 'bg-vexa-600 text-white font-medium shadow-soft'
-                  : 'text-ink-700 hover:bg-canvas-100 hover:text-ink-900'
+              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive ? 'bg-vexa-50 text-vexa-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
               title={collapsed ? t(item.key) : undefined}>
-              <Icon size={18} strokeWidth={isActive ? 2.25 : 1.75} />
+              <Icon size={19} strokeWidth={isActive ? 2 : 1.5} />
               {!collapsed && <span>{t(item.key)}</span>}
             </button>
           )
         })}
         {isAdmin && (
           <>
-            <div className="my-4 mx-3 border-t border-canvas-200" />
+            <div className="my-2 mx-3 border-t border-gray-100" />
             {adminItems.map((item) => {
               const isActive = pathname.startsWith(item.href)
               const Icon = item.icon
               return (
                 <button key={item.href} onClick={() => navigate(item.href)}
-                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-[13px] tracking-wide transition-colors ${
-                    isActive
-                      ? 'bg-vexa-600 text-white font-medium shadow-soft'
-                      : 'text-ink-700 hover:bg-canvas-100 hover:text-ink-900'
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    isActive ? 'bg-vexa-50 text-vexa-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                   title={collapsed ? t(item.key) : undefined}>
-                  <Icon size={18} strokeWidth={isActive ? 2.25 : 1.75} />
+                  <Icon size={19} strokeWidth={isActive ? 2 : 1.5} />
                   {!collapsed && <span>{t(item.key)}</span>}
                 </button>
               )
@@ -119,23 +117,24 @@ export default function Sidebar() {
         )}
       </nav>
 
-      <div className="border-t border-canvas-200 p-3 space-y-0.5">
+      {/* Footer */}
+      <div className="border-t border-gray-100 p-2 space-y-0.5">
         <button onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-[13px] text-ink-500 hover:bg-canvas-100 hover:text-ink-700 transition-colors">
-          <Globe size={16} strokeWidth={1.75} />
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600">
+          <Globe size={17} strokeWidth={1.5} />
           {!collapsed && <span>{locale === 'en' ? 'Español' : 'English'}</span>}
         </button>
-        <div className="flex items-center gap-3 px-3 pt-3 pb-2">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-vexa-600 to-vexa-700 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 ring-1 ring-canvas-200/80">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-vexa-500 to-vexa-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
             {initials}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-ink-900 truncate">{profile?.full_name || '...'}</p>
-              <p className="text-[11px] text-ink-500 capitalize tracking-wide">{profile?.role || '...'}</p>
+              <p className="text-sm font-medium text-gray-900 truncate">{profile?.full_name || '...'}</p>
+              <p className="text-xs text-gray-400 capitalize">{profile?.role || '...'}</p>
             </div>
           )}
-          <button onClick={handleLogout} className="p-1.5 rounded-md hover:bg-canvas-100 text-ink-500" title={t('auth.logout')}>
+          <button onClick={handleLogout} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400" title={t('auth.logout')}>
             <LogOut size={15} />
           </button>
         </div>
@@ -146,22 +145,22 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-canvas-50/95 backdrop-blur-sm border-b border-canvas-200 flex items-center px-4 z-40">
-        <button onClick={() => setMobileOpen(true)} className="p-1.5 -ml-1.5 rounded-md hover:bg-canvas-100">
-          <Menu size={22} className="text-ink-700" />
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 flex items-center px-4 z-40">
+        <button onClick={() => setMobileOpen(true)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100">
+          <Menu size={22} className="text-gray-600" />
         </button>
-        <span className="wordmark ml-3 text-xl text-vexa-600">vexa</span>
+        <span className="ml-3 text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>
       </div>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-72 h-full bg-canvas-50 flex flex-col shadow-soft-lg">
-            <div className="flex items-center justify-between h-14 px-4 border-b border-canvas-200">
-              <span className="wordmark text-xl text-vexa-600">vexa</span>
-              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-md hover:bg-canvas-100">
-                <X size={20} className="text-ink-500" />
+          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-72 h-full bg-white flex flex-col shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-gray-100">
+              <span className="text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
+                <X size={20} className="text-gray-400" />
               </button>
             </div>
             {sidebarContent}
@@ -169,11 +168,11 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Desktop sidebar — warm cream instead of flat white */}
-      <aside className={`hidden lg:flex flex-col h-screen bg-canvas-50 border-r border-canvas-200 transition-all duration-200 ${collapsed ? 'w-[60px]' : 'w-60'}`}>
-        <div className="flex items-center justify-between h-16 px-4 border-b border-canvas-200">
-          {!collapsed && <span className="wordmark text-2xl text-vexa-600">vexa</span>}
-          <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-md hover:bg-canvas-100 text-ink-500 mx-auto">
+      {/* Desktop sidebar */}
+      <aside className={`hidden lg:flex flex-col h-screen bg-white border-r border-gray-100 transition-all duration-200 ${collapsed ? 'w-[60px]' : 'w-56'}`}>
+        <div className="flex items-center justify-between h-14 px-3 border-b border-gray-100">
+          {!collapsed && <span className="text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>}
+          <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 mx-auto">
             <ChevronLeft size={16} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           </button>
         </div>
