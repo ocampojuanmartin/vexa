@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -32,6 +39,83 @@
 }
 
 @layer components {
+  /* Aurora hero backdrop — slow-moving mesh of blue + indigo behind the landing
+     hero only. Never covers the whole page; contained to its own section so the
+     rest of the site stays calm. Paused under prefers-reduced-motion. */
+  .hero-aurora {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .hero-aurora::before,
+  .hero-aurora::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.7;
+    animation: aurora-drift 18s ease-in-out infinite;
+    will-change: transform;
+  }
+  .hero-aurora::before {
+    width: 620px; height: 620px;
+    background: radial-gradient(circle, rgba(49, 130, 206, 0.45), rgba(26, 54, 93, 0.2) 60%, transparent 70%);
+    top: -180px; left: -120px;
+  }
+  .hero-aurora::after {
+    width: 720px; height: 720px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.32), rgba(165, 180, 252, 0.18) 55%, transparent 70%);
+    bottom: -220px; right: -140px;
+    animation-delay: -9s;
+  }
+  @keyframes aurora-drift {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(30px, -20px, 0) scale(1.08); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-aurora::before,
+    .hero-aurora::after { animation: none; }
+  }
+  html.dark .hero-aurora::before {
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.35), rgba(30, 58, 138, 0.2) 60%, transparent 70%);
+  }
+  html.dark .hero-aurora::after {
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3), rgba(76, 29, 149, 0.15) 55%, transparent 70%);
+  }
+
+  /* Brand wordmark — oversized, gradient-filled, tight letter-spacing. The
+     landing's focal point. Scales responsively via clamp. */
+  .wordmark-hero {
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    font-size: clamp(6rem, 18vw, 14rem);
+    background: linear-gradient(135deg, #1A365D 0%, #1A365D 40%, #3182CE 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  html.dark .wordmark-hero {
+    background: linear-gradient(135deg, #93C5FD 0%, #60A5FA 50%, #818CF8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Subtle hairline used to anchor the wordmark + tagline */
+  .wordmark-rule {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(26, 54, 93, 0.35), transparent);
+    width: 180px;
+    margin: 0 auto;
+  }
+  html.dark .wordmark-rule {
+    background: linear-gradient(to right, transparent, rgba(147, 197, 253, 0.4), transparent);
+  }
+
   /* Frosted main panel — semi-transparent white over the gradient. */
   .glass-panel {
     background-color: rgba(255, 255, 255, 0.62);

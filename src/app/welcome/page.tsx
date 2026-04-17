@@ -69,7 +69,7 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-semibold text-vexa-600 tracking-[3px]">vexa</span>
+          <a href="#top" className="text-xl font-semibold text-vexa-600 tracking-[3px] hover:tracking-[4px] transition-all">vexa</a>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.features}</a>
             <a href="#how" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.how}</a>
@@ -90,18 +90,62 @@ export default function LandingPage() {
         )}
       </nav>
 
-      {/* HERO */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900">
+      {/* HERO — brand-forward, Kinetic-Typography wordmark as the moment */}
+      <section className="relative pt-28 pb-24 px-6 overflow-hidden">
+        <div className="hero-aurora" aria-hidden="true" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <p className="text-[11px] uppercase tracking-[0.32em] text-vexa-600/70 dark:text-vexa-500/80 font-semibold mb-8">
+            {es ? 'Plataforma para estudios jurídicos' : 'Software for law firms'}
+          </p>
+
+          {/* Oversized brand wordmark — the focal point */}
+          <h1 className="wordmark-hero" aria-label="Vexa">vexa</h1>
+
+          <div className="wordmark-rule mt-8" />
+
+          {/* Tagline — supporting, not competing. Still a heading so SEO + a11y
+              treat it as a page-level title (h1 is the wordmark itself). */}
+          <h2 className="mt-8 text-2xl md:text-3xl font-medium tracking-tight text-gray-900 dark:text-slate-100 max-w-2xl mx-auto leading-[1.15]">
             {L.hero.title}
-          </h1>
-          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          </h2>
+          <p className="mt-5 text-base text-gray-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
             {L.hero.sub}
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#contact" className="px-8 py-3 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 transition-colors">{L.hero.cta}</a>
-            <a href="#features" className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">{L.hero.cta2}</a>
+
+          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors shadow-lg shadow-vexa-600/20">{L.hero.cta}</a>
+            <a href="#features" className="px-8 py-3.5 border border-gray-300 dark:border-white/15 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-white/60 dark:hover:bg-white/5 transition-colors backdrop-blur-sm">{L.hero.cta2}</a>
+          </div>
+
+          {/* Discreet product preview — small mock dashboard frame to give the
+              landing a visual anchor per ui-ux-pro-max "Product Demo + Features" */}
+          <div className="mt-20 mx-auto max-w-3xl">
+            <div className="glass-panel rounded-2xl p-4 sm:p-5 shadow-2xl shadow-vexa-900/10">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200/60 dark:border-white/10">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-300/70"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-300/70"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-green-300/70"></span>
+                <span className="ml-3 text-xs text-gray-400 font-mono tracking-tight">vexa.app / timesheets</span>
+              </div>
+              <div className="grid grid-cols-4 gap-3 text-left">
+                {[
+                  { k: es?'Horas este mes':'Hours this month', v: '164h 20m' },
+                  { k: es?'Asuntos activos':'Active matters', v: '12' },
+                  { k: es?'Timesheets':'Timesheets', v: '7' },
+                  { k: es?'Por cobrar':'Outstanding', v: '$ 48,200' },
+                ].map((s, i) => (
+                  <div key={i} className="bg-white/60 dark:bg-white/5 rounded-lg p-3 border border-white/70 dark:border-white/10">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-medium">{s.k}</p>
+                    <p className="mt-1.5 text-sm sm:text-lg font-bold text-gray-900 dark:text-slate-100 tabular-nums">{s.v}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 grid grid-cols-12 gap-1.5">
+                {[35, 58, 42, 72, 48, 85, 60, 40, 68, 52, 74, 45].map((h, i) => (
+                  <div key={i} className="rounded-sm bg-gradient-to-t from-vexa-500/70 to-vexa-600/90" style={{ height: `${h}px` }} />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
