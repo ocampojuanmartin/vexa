@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, Clock, Receipt, FileText, BarChart3,
-  Settings, LogOut, ChevronLeft, Globe, UserCog, Menu, X,
+  Settings, LogOut, ChevronLeft, Globe, UserCog, Menu, X, Moon, Sun,
 } from 'lucide-react'
 
 type UserProfile = {
@@ -36,6 +36,20 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [isDark, setIsDark] = useState(false)
+
+  // Sync current theme state from the <html> class (set by the pre-hydration script
+  // in layout.tsx so first-paint matches the saved preference).
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'))
+  }, [])
+
+  function toggleTheme() {
+    const next = !isDark
+    setIsDark(next)
+    document.documentElement.classList.toggle('dark', next)
+    try { localStorage.setItem('vexa-theme', next ? 'dark' : 'light') } catch {}
+  }
 
   useEffect(() => {
     async function loadProfile() {
@@ -119,6 +133,13 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="border-t border-slate-900/10 p-2 space-y-0.5">
+        <button onClick={toggleTheme}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/40 hover:text-gray-600"
+          title={isDark ? (locale === 'es' ? 'Modo claro' : 'Light mode') : (locale === 'es' ? 'Modo oscuro' : 'Dark mode')}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {isDark ? <Sun size={17} strokeWidth={1.5} /> : <Moon size={17} strokeWidth={1.5} />}
+          {!collapsed && <span>{isDark ? (locale === 'es' ? 'Modo claro' : 'Light mode') : (locale === 'es' ? 'Modo oscuro' : 'Dark mode')}</span>}
+        </button>
         <button onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
           className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/40 hover:text-gray-600">
           <Globe size={17} strokeWidth={1.5} />
