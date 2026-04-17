@@ -116,37 +116,6 @@ export default function LandingPage() {
             <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors shadow-lg shadow-vexa-600/20">{L.hero.cta}</a>
             <a href="#features" className="px-8 py-3.5 border border-gray-300 dark:border-white/15 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-white/60 dark:hover:bg-white/5 transition-colors backdrop-blur-sm">{L.hero.cta2}</a>
           </div>
-
-          {/* Discreet product preview — small mock dashboard frame to give the
-              landing a visual anchor per ui-ux-pro-max "Product Demo + Features" */}
-          <div className="mt-20 mx-auto max-w-3xl">
-            <div className="glass-panel rounded-2xl p-4 sm:p-5 shadow-2xl shadow-vexa-900/10">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200/60 dark:border-white/10">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-300/70"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-300/70"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-green-300/70"></span>
-                <span className="ml-3 text-xs text-gray-400 font-mono tracking-tight">vexa.app / timesheets</span>
-              </div>
-              <div className="grid grid-cols-4 gap-3 text-left">
-                {[
-                  { k: es?'Horas este mes':'Hours this month', v: '164h 20m' },
-                  { k: es?'Asuntos activos':'Active matters', v: '12' },
-                  { k: es?'Timesheets':'Timesheets', v: '7' },
-                  { k: es?'Por cobrar':'Outstanding', v: '$ 48,200' },
-                ].map((s, i) => (
-                  <div key={i} className="bg-white/60 dark:bg-white/5 rounded-lg p-3 border border-white/70 dark:border-white/10">
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-400 font-medium">{s.k}</p>
-                    <p className="mt-1.5 text-sm sm:text-lg font-bold text-gray-900 dark:text-slate-100 tabular-nums">{s.v}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 grid grid-cols-12 gap-1.5">
-                {[35, 58, 42, 72, 48, 85, 60, 40, 68, 52, 74, 45].map((h, i) => (
-                  <div key={i} className="rounded-sm bg-gradient-to-t from-vexa-500/70 to-vexa-600/90" style={{ height: `${h}px` }} />
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 

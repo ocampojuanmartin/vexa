@@ -85,24 +85,19 @@
     background: radial-gradient(circle, rgba(139, 92, 246, 0.3), rgba(76, 29, 149, 0.15) 55%, transparent 70%);
   }
 
-  /* Brand wordmark — oversized, gradient-filled, tight letter-spacing. The
-     landing's focal point. Scales responsively via clamp. */
+  /* Brand wordmark — scaled-up version of the existing vexa wordmark used
+     everywhere else in the app (nav, sidebar, auth): solid navy, wide letter-
+     spacing, semi-bold. Do NOT change its appearance, only its size. */
   .wordmark-hero {
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 0.9;
-    font-size: clamp(6rem, 18vw, 14rem);
-    background: linear-gradient(135deg, #1A365D 0%, #1A365D 40%, #3182CE 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    font-size: clamp(4.5rem, 14vw, 10rem);
+    color: #1a365d; /* same as text-vexa-600 */
     display: inline-block;
   }
   html.dark .wordmark-hero {
-    background: linear-gradient(135deg, #93C5FD 0%, #60A5FA 50%, #818CF8 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #93C5FD;
   }
 
   /* Subtle hairline used to anchor the wordmark + tagline */
