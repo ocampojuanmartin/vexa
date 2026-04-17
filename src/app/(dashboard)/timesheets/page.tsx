@@ -159,10 +159,12 @@ export default function TimesheetsPage(){
 
   async function downloadPDF(ts:Timesheet,isDraft:boolean){
     const sb=createClient()
-    // Fetch line items and expenses for this timesheet (joined to their source rows).
-    const[{data:items},{data:exps}]=await Promise.all([
+    // Fetch line items, expenses, and the firm's name+logo so the PDF header
+    // uses the firm's branding instead of "vexa".
+    const[{data:items},{data:exps},{data:firm}]=await Promise.all([
       sb.from('timesheet_items').select('id, hours_billed, rate_applied, amount, time_entries(entry_date, description), users(full_name)').eq('timesheet_id',ts.id),
       sb.from('timesheet_expenses').select('id, amount_billed, expenses(expense_date, category, currency)').eq('timesheet_id',ts.id),
+      sb.from('firms').select('name, logo_url').eq('id',firmId).maybeSingle(),
     ])
     const total=grandTotalForDetail(ts)
     const currency=ts.matters?.rate_currency||'USD'
@@ -176,18 +178,27 @@ export default function TimesheetsPage(){
       const ex=e.expenses||{}
       return `<tr><td>${escapeHtml(ex.expense_date||'')}</td><td colspan="4">${escapeHtml(ex.category||'')}</td><td class="right">${escapeHtml(ex.currency||'')} ${Number(e.amount_billed||0).toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`
     }).join('')
+    const firmName = firm?.name || ''
+    const firmLogoUrl = firm?.logo_url || ''
+    // Header branding: prefer uploaded logo; fall back to firm name in large type.
+    const firmBrand = firmLogoUrl
+      ? `<img src="${escapeHtml(firmLogoUrl)}" alt="${escapeHtml(firmName)}" class="firm-logo" />`
+      : `<h1>${escapeHtml(firmName)}</h1>`
+
     const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(ts.code||'')}</title>
 <style>body{font-family:-apple-system,sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#1a365d;position:relative}
-h1{font-size:20px;margin:0}h2{font-size:14px;color:#718096;margin:4px 0 0}
+h1{font-size:22px;margin:0;color:#1a365d}h2{font-size:14px;color:#718096;margin:8px 0 0;font-weight:500}
+.firm-logo{max-height:60px;max-width:220px;object-fit:contain;display:block}
 table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px}
 th{background:#f7fafc;font-weight:600;color:#4a5568}.right{text-align:right}.section-head td{background:#f7fafc;font-weight:600;padding-top:14px}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:18px;border-bottom:1px solid #e2e8f0}
 .footer{margin-top:30px;padding-top:16px;border-top:2px solid #1a365d;display:flex;justify-content:space-between;font-size:14px}
 .grand{font-size:20px;font-weight:700}
+.attribution{margin-top:28px;font-size:10px;color:#a0aec0;text-align:center;letter-spacing:0.08em;text-transform:uppercase}
 ${isDraft?'.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:120px;color:rgba(255,0,0,0.08);font-weight:900;pointer-events:none;z-index:1}':''}
 </style></head><body>
 ${isDraft?`<div class="watermark">${headers.draft}</div>`:''}
-<div class="header"><div><h1>vexa</h1><h2>${escapeHtml(ts.matters?.title||'')}</h2><p style="font-size:12px;color:#a0aec0;margin-top:4px">${escapeHtml(ts.matters?.clients?.name||'')}</p></div>
+<div class="header"><div>${firmBrand}<h2>${escapeHtml(ts.matters?.title||'')}</h2><p style="font-size:12px;color:#a0aec0;margin-top:4px">${escapeHtml(ts.matters?.clients?.name||'')}</p></div>
 <div style="text-align:right"><p style="font-size:16px;font-weight:600">${escapeHtml(ts.code||'')}</p><p style="font-size:12px;color:#718096">${ts.period_start} → ${ts.period_end}</p>
 ${isDraft?`<p style="font-size:11px;color:red;margin-top:4px">${headers.draft}</p>`:''}</div></div>
 <table><thead><tr><th>${headers.date}</th><th>${headers.lawyer}</th><th>${headers.desc}</th><th class="right">${headers.hours}</th><th class="right">${headers.rate}</th><th class="right">${headers.amount}</th></tr></thead>
@@ -199,6 +210,7 @@ ${ts.discount_amount>0?`<p style="font-size:12px;color:#e53e3e">${es?'Descuento'
 ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de éxito':'Success fee'}: +${escapeHtml(currency)} ${Number(ts.success_fee).toLocaleString(undefined,{minimumFractionDigits:2})} ${ts.success_fee_description?'('+escapeHtml(ts.success_fee_description)+')':''}</p>`:''}
 </div>
 <div><p style="color:#718096;font-size:12px">${headers.total}</p><p class="grand">${escapeHtml(currency)} ${total.toLocaleString(undefined,{minimumFractionDigits:2})}</p></div></div>
+<div class="attribution">Generated with Vexa</div>
 <script>window.print()</script></body></html>`
     const w=window.open('','_blank');if(w){w.document.write(html);w.document.close()}
   }
