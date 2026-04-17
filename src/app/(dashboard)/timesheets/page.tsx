@@ -13,7 +13,7 @@ type Timesheet = {
   payment_amount:number|null; payment_currency:string|null
   matters?:any; users?:any
 }
-type Matter = { id:string; title:string; custom_rate:number|null; client_id:string; rate_currency:string; hour_cap:number|null; use_flat_rate:boolean; flat_rate:number|null; clients?:any }
+type Matter = { id:string; title:string; client_id:string; rate_currency:string; hour_cap:number|null; use_flat_rate:boolean; flat_rate:number|null; clients?:any }
 type ClientOption = { id:string; name:string }
 type TimeEntry = { id:string; entry_date:string; hours_logged:number; description:string; is_billable:boolean; user_id:string; authorized_by:string|null; users?:any }
 type Expense = { id:string; expense_date:string; category:string; amount:number; currency:string }
@@ -65,7 +65,7 @@ export default function TimesheetsPage(){
     setUserId(user.id);setFirmId(p.firm_id)
     const[ts,m,c]=await Promise.all([
       sb.from('timesheets').select('*, matters(title, client_id, rate_currency, clients(name)), users!timesheets_created_by_fkey(full_name)').order('created_at',{ascending:false}),
-      sb.from('matters').select('id, title, custom_rate, client_id, rate_currency, hour_cap, use_flat_rate, flat_rate, clients(name)').order('title'),
+      sb.from('matters').select('id, title, client_id, rate_currency, hour_cap, use_flat_rate, flat_rate, clients(name)').order('title'),
       sb.from('clients').select('id, name').order('name'),
     ])
     if(ts.data)setTimesheets(ts.data as any)
@@ -155,30 +155,64 @@ export default function TimesheetsPage(){
 
   function grandTotalForDetail(t:Timesheet){return(t.total_billed_amount||0)+(t.total_expenses||0)-(t.discount_amount||0)+(t.success_fee||0)}
 
-  function downloadPDF(ts:Timesheet,isDraft:boolean){
+  function escapeHtml(s:string){return String(s||'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c))}
+
+  async function downloadPDF(ts:Timesheet,isDraft:boolean){
+    const sb=createClient()
+    // Fetch line items, expenses, and the firm's name+logo so the PDF header
+    // uses the firm's branding instead of "vexa".
+    const[{data:items},{data:exps},{data:firm}]=await Promise.all([
+      sb.from('timesheet_items').select('id, hours_billed, rate_applied, amount, time_entries(entry_date, description), users(full_name)').eq('timesheet_id',ts.id),
+      sb.from('timesheet_expenses').select('id, amount_billed, expenses(expense_date, category, currency)').eq('timesheet_id',ts.id),
+      sb.from('firms').select('name, logo_url').eq('id',firmId).maybeSingle(),
+    ])
     const total=grandTotalForDetail(ts)
     const currency=ts.matters?.rate_currency||'USD'
-    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${ts.code}</title>
+    const headers=es?{date:'Fecha',lawyer:'Abogado',desc:'Descripción',hours:'Horas',rate:'Tarifa',amount:'Importe',expenses:'Gastos',total:'Total',draft:'BORRADOR'}
+                   :{date:'Date',lawyer:'Lawyer',desc:'Description',hours:'Hours',rate:'Rate',amount:'Amount',expenses:'Expenses',total:'Total',draft:'DRAFT'}
+    const itemRows=(items||[]).map((i:any)=>{
+      const te=i.time_entries||{};const u=i.users||{}
+      return `<tr><td>${escapeHtml(te.entry_date||'')}</td><td>${escapeHtml(u.full_name||'')}</td><td>${escapeHtml(te.description||'')}</td><td class="right">${Number(i.hours_billed||0).toFixed(2)}</td><td class="right">${Number(i.rate_applied||0).toLocaleString(undefined,{minimumFractionDigits:2})}</td><td class="right">${Number(i.amount||0).toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`
+    }).join('')
+    const expRows=(exps||[]).map((e:any)=>{
+      const ex=e.expenses||{}
+      return `<tr><td>${escapeHtml(ex.expense_date||'')}</td><td colspan="4">${escapeHtml(ex.category||'')}</td><td class="right">${escapeHtml(ex.currency||'')} ${Number(e.amount_billed||0).toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`
+    }).join('')
+    const firmName = firm?.name || ''
+    const firmLogoUrl = firm?.logo_url || ''
+    // Header branding: prefer uploaded logo; fall back to firm name in large type.
+    const firmBrand = firmLogoUrl
+      ? `<img src="${escapeHtml(firmLogoUrl)}" alt="${escapeHtml(firmName)}" class="firm-logo" />`
+      : `<h1>${escapeHtml(firmName)}</h1>`
+
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(ts.code||'')}</title>
 <style>body{font-family:-apple-system,sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#1a365d;position:relative}
-h1{font-size:20px;margin:0}h2{font-size:14px;color:#718096;margin:4px 0 0}
+h1{font-size:22px;margin:0;color:#1a365d}h2{font-size:14px;color:#718096;margin:8px 0 0;font-weight:500}
+.firm-logo{max-height:60px;max-width:220px;object-fit:contain;display:block}
+.vexa-mark{font-size:11px;color:#a0aec0;letter-spacing:3px;font-weight:600;margin-bottom:6px;text-transform:lowercase}
 table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px}
-th{background:#f7fafc;font-weight:600;color:#4a5568}.right{text-align:right}.total-row{font-weight:700;background:#f7fafc}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
-.meta{font-size:12px;color:#718096;margin-top:16px}.meta span{display:block;margin:2px 0}
+th{background:#f7fafc;font-weight:600;color:#4a5568}.right{text-align:right}.section-head td{background:#f7fafc;font-weight:600;padding-top:14px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:18px;border-bottom:1px solid #e2e8f0}
 .footer{margin-top:30px;padding-top:16px;border-top:2px solid #1a365d;display:flex;justify-content:space-between;font-size:14px}
 .grand{font-size:20px;font-weight:700}
+.attribution{margin-top:28px;padding-top:14px;border-top:1px solid #edf2f7;font-size:10px;color:#a0aec0;text-align:center;letter-spacing:0.12em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.attribution .wordmark{font-weight:600;letter-spacing:2px;color:#1a365d;text-transform:lowercase;font-size:11px}
 ${isDraft?'.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:120px;color:rgba(255,0,0,0.08);font-weight:900;pointer-events:none;z-index:1}':''}
 </style></head><body>
-${isDraft?'<div class="watermark">DRAFT</div>':''}
-<div class="header"><div><h1>vexa</h1><h2>${ts.matters?.title||''}</h2><p style="font-size:12px;color:#a0aec0;margin-top:4px">${ts.matters?.clients?.name||''}</p></div>
-<div style="text-align:right"><p style="font-size:16px;font-weight:600">${ts.code}</p><p style="font-size:12px;color:#718096">${ts.period_start} → ${ts.period_end}</p>
-${isDraft?'<p style="font-size:11px;color:red;margin-top:4px">DRAFT</p>':''}</div></div>
-<table><thead><tr><th>Date</th><th>Lawyer</th><th>Description</th><th class="right">Hours</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
-<tbody id="items"></tbody></table>
-<div class="footer"><div>${ts.total_expenses>0?`<p style="font-size:12px;color:#718096">Expenses: ${currency} ${ts.total_expenses?.toLocaleString()}</p>`:''}
-${ts.discount_amount>0?`<p style="font-size:12px;color:#e53e3e">Discount: -${currency} ${ts.discount_amount?.toLocaleString()} ${ts.discount_description?'('+ts.discount_description+')':''}</p>`:''}
-${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">Success fee: +${currency} ${ts.success_fee?.toLocaleString()} ${ts.success_fee_description?'('+ts.success_fee_description+')':''}</p>`:''}</div>
-<div><p style="color:#718096;font-size:12px">Total</p><p class="grand">${currency} ${total.toLocaleString(undefined,{minimumFractionDigits:2})}</p></div></div>
+${isDraft?`<div class="watermark">${headers.draft}</div>`:''}
+<div class="header"><div>${firmBrand}<h2>${escapeHtml(ts.matters?.title||'')}</h2><p style="font-size:12px;color:#a0aec0;margin-top:4px">${escapeHtml(ts.matters?.clients?.name||'')}</p></div>
+<div style="text-align:right"><div class="vexa-mark">vexa</div><p style="font-size:16px;font-weight:600">${escapeHtml(ts.code||'')}</p><p style="font-size:12px;color:#718096">${ts.period_start} → ${ts.period_end}</p>
+${isDraft?`<p style="font-size:11px;color:red;margin-top:4px">${headers.draft}</p>`:''}</div></div>
+<table><thead><tr><th>${headers.date}</th><th>${headers.lawyer}</th><th>${headers.desc}</th><th class="right">${headers.hours}</th><th class="right">${headers.rate}</th><th class="right">${headers.amount}</th></tr></thead>
+<tbody>${itemRows||`<tr><td colspan="6" style="text-align:center;color:#a0aec0">—</td></tr>`}
+${expRows?`<tr class="section-head"><td colspan="6">${headers.expenses}</td></tr>${expRows}`:''}
+</tbody></table>
+<div class="footer"><div>
+${ts.discount_amount>0?`<p style="font-size:12px;color:#e53e3e">${es?'Descuento':'Discount'}: -${escapeHtml(currency)} ${Number(ts.discount_amount).toLocaleString(undefined,{minimumFractionDigits:2})} ${ts.discount_description?'('+escapeHtml(ts.discount_description)+')':''}</p>`:''}
+${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">${es?'Honorario de éxito':'Success fee'}: +${escapeHtml(currency)} ${Number(ts.success_fee).toLocaleString(undefined,{minimumFractionDigits:2})} ${ts.success_fee_description?'('+escapeHtml(ts.success_fee_description)+')':''}</p>`:''}
+</div>
+<div><p style="color:#718096;font-size:12px">${headers.total}</p><p class="grand">${escapeHtml(currency)} ${total.toLocaleString(undefined,{minimumFractionDigits:2})}</p></div></div>
+<div class="attribution"><span>Generated with</span><span class="wordmark">vexa</span></div>
 <script>window.print()</script></body></html>`
     const w=window.open('','_blank');if(w){w.document.write(html);w.document.close()}
   }
@@ -340,6 +374,7 @@ ${ts.success_fee>0?`<p style="font-size:12px;color:#38a169">Success fee: +${curr
           {successFee>0&&<div className="flex justify-between text-sm"><span className="text-green-600">{L.successFeeLabel}</span><span className="font-medium text-green-600">+{matterCurrency} {successFee.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>}
           <div className="flex justify-between text-sm border-t pt-2 border-gray-200"><span className="font-semibold">{L.grand}</span><span className="font-semibold">{matterCurrency} {grandTotal.toLocaleString(undefined,{minimumFractionDigits:2})}</span></div>
         </div>
+        {error&&<p className="mt-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
         <div className="mt-4 flex justify-between">
           <button onClick={()=>setStep('review')} className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><ArrowLeft size={14}/>{L.back}</button>
           <button onClick={saveTimesheet} disabled={saving} className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 disabled:opacity-50">{saving?'...':L.save}</button>

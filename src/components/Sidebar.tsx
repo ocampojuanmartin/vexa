@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, Clock, Receipt, FileText, BarChart3,
-  Settings, LogOut, ChevronLeft, Globe, UserCog, Menu, X,
+  Settings, LogOut, ChevronLeft, Globe, UserCog, Menu, X, Moon, Sun,
 } from 'lucide-react'
 
 type UserProfile = {
@@ -36,6 +36,20 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [isDark, setIsDark] = useState(false)
+
+  // Sync current theme state from the <html> class (set by the pre-hydration script
+  // in layout.tsx so first-paint matches the saved preference).
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'))
+  }, [])
+
+  function toggleTheme() {
+    const next = !isDark
+    setIsDark(next)
+    document.documentElement.classList.toggle('dark', next)
+    try { localStorage.setItem('vexa-theme', next ? 'dark' : 'light') } catch {}
+  }
 
   useEffect(() => {
     async function loadProfile() {
@@ -88,7 +102,7 @@ export default function Sidebar() {
           return (
             <button key={item.href} onClick={() => navigate(item.href)}
               className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                isActive ? 'bg-vexa-50 text-vexa-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                isActive ? 'sidebar-active text-vexa-700 font-medium' : 'text-gray-500 hover:bg-white/40 hover:text-gray-900'
               }`}
               title={collapsed ? t(item.key) : undefined}>
               <Icon size={19} strokeWidth={isActive ? 2 : 1.5} />
@@ -98,14 +112,14 @@ export default function Sidebar() {
         })}
         {isAdmin && (
           <>
-            <div className="my-2 mx-3 border-t border-gray-100" />
+            <div className="my-2 mx-3 border-t border-slate-900/10" />
             {adminItems.map((item) => {
               const isActive = pathname.startsWith(item.href)
               const Icon = item.icon
               return (
                 <button key={item.href} onClick={() => navigate(item.href)}
                   className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                    isActive ? 'bg-vexa-50 text-vexa-700 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    isActive ? 'sidebar-active text-vexa-700 font-medium' : 'text-gray-500 hover:bg-white/40 hover:text-gray-900'
                   }`}
                   title={collapsed ? t(item.key) : undefined}>
                   <Icon size={19} strokeWidth={isActive ? 2 : 1.5} />
@@ -118,9 +132,16 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 p-2 space-y-0.5">
+      <div className="border-t border-slate-900/10 p-2 space-y-0.5">
+        <button onClick={toggleTheme}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/40 hover:text-gray-600"
+          title={isDark ? (locale === 'es' ? 'Modo claro' : 'Light mode') : (locale === 'es' ? 'Modo oscuro' : 'Dark mode')}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {isDark ? <Sun size={17} strokeWidth={1.5} /> : <Moon size={17} strokeWidth={1.5} />}
+          {!collapsed && <span>{isDark ? (locale === 'es' ? 'Modo claro' : 'Light mode') : (locale === 'es' ? 'Modo oscuro' : 'Dark mode')}</span>}
+        </button>
         <button onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600">
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/40 hover:text-gray-600">
           <Globe size={17} strokeWidth={1.5} />
           {!collapsed && <span>{locale === 'en' ? 'Español' : 'English'}</span>}
         </button>
@@ -134,7 +155,7 @@ export default function Sidebar() {
               <p className="text-xs text-gray-400 capitalize">{profile?.role || '...'}</p>
             </div>
           )}
-          <button onClick={handleLogout} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400" title={t('auth.logout')}>
+          <button onClick={handleLogout} className="p-1.5 rounded-md hover:bg-white/40 text-gray-400" title={t('auth.logout')}>
             <LogOut size={15} />
           </button>
         </div>
@@ -144,9 +165,9 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 flex items-center px-4 z-40">
-        <button onClick={() => setMobileOpen(true)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100">
+      {/* Mobile header — frosted glass, lets canvas gradient show behind */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 sidebar-glass flex items-center px-4 z-40">
+        <button onClick={() => setMobileOpen(true)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/50">
           <Menu size={22} className="text-gray-600" />
         </button>
         <span className="ml-3 text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>
@@ -155,11 +176,11 @@ export default function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-72 h-full bg-white flex flex-col shadow-xl">
-            <div className="flex items-center justify-between h-14 px-4 border-b border-gray-100">
+          <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-72 h-full sidebar-glass flex flex-col shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-slate-900/10">
               <span className="text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>
-              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-white/50">
                 <X size={20} className="text-gray-400" />
               </button>
             </div>
@@ -168,11 +189,11 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Desktop sidebar */}
-      <aside className={`hidden lg:flex flex-col h-screen bg-white border-r border-gray-100 transition-all duration-200 ${collapsed ? 'w-[60px]' : 'w-56'}`}>
-        <div className="flex items-center justify-between h-14 px-3 border-b border-gray-100">
+      {/* Desktop sidebar — frosted, gradient flows through */}
+      <aside className={`hidden lg:flex flex-col h-screen sidebar-glass transition-all duration-200 ${collapsed ? 'w-[60px]' : 'w-56'}`}>
+        <div className="flex items-center justify-between h-14 px-3 border-b border-slate-900/10">
           {!collapsed && <span className="text-lg font-semibold text-vexa-600 tracking-[3px]">vexa</span>}
-          <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 mx-auto">
+          <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-white/50 text-gray-400 mx-auto">
             <ChevronLeft size={16} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           </button>
         </div>

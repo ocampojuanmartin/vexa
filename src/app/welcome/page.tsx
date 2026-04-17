@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, FileText, BarChart3, Users, Shield, Globe, ChevronRight, Check, Menu, X } from 'lucide-react'
+import { Clock, FileText, BarChart3, Users, Shield, Globe, Check, Menu, X } from 'lucide-react'
 
 export default function LandingPage() {
   const [lang, setLang] = useState<'es'|'en'>('en')
@@ -32,10 +32,10 @@ export default function LandingPage() {
       title: es ? 'Todo lo que tu estudio necesita' : 'Everything your firm needs',
       sub: es ? 'Diseñado específicamente para estudios jurídicos.' : 'Built specifically for law firms.',
       items: [
-        { icon: Clock, title: es?'Carga de horas':'Time tracking', desc: es?'Calendario visual con carga por día, cronómetro integrado, horas y minutos. Cada abogado carga sus horas y el socio las revisa.':'Visual calendar with daily entry, built-in timer, hours and minutes. Associates log, partners review.' },
-        { icon: FileText, title: es?'Timesheets y facturación':'Timesheets & billing', desc: es?'Generá timesheets por asunto y período. Ajustá las horas antes de enviar al cliente. Seguimiento completo: borrador → enviado → aprobado → facturado → cobrado.':'Generate timesheets per matter and period. Adjust hours before sending. Full tracking: draft → sent → approved → invoiced → paid.' },
+        { icon: Clock, title: es?'Carga de horas':'Time tracking', desc: es?'Calendario visual por día con horas y minutos. Cada abogado carga sus horas y el socio las revisa. Soporte multi-idioma en la descripción del trabajo.':'Visual daily calendar with hours and minutes. Associates log, partners review. Multi-language work descriptions.' },
+        { icon: FileText, title: es?'Timesheets y facturación':'Timesheets & billing', desc: es?'Generá timesheets por asunto y período. Ajustá horas y tarifas antes de enviar. Seguimiento completo: borrador → emitido → enviado → aprobado → facturado → cobrado.':'Generate timesheets per matter and period. Adjust hours and rates before sending. Full tracking: draft → issued → sent → approved → invoiced → paid.' },
         { icon: BarChart3, title: es?'Estadísticas para socios':'Partner statistics', desc: es?'Horas logueadas vs facturadas, ratio de facturación, ingresos por abogado, tasa de cobro, originación de clientes. Todo filtrable por período.':'Logged vs billed hours, billing ratio, revenue per lawyer, collection rate, client origination. All filterable by period.' },
-        { icon: Users, title: es?'Clientes y asuntos':'Clients & matters', desc: es?'Directorio de clientes con sus asuntos. Originación por socio con porcentaje. Abogados asignados por asunto con tarifa personalizada.':'Client directory with matters. Partner origination with splits. Assigned lawyers per matter with custom rates.' },
+        { icon: Users, title: es?'Clientes y asuntos':'Clients & matters', desc: es?'Directorio de clientes con sus asuntos. Originación y liderazgo por socio con porcentaje. Tarifas por categoría o tarifa flat por asunto, con tope de horas y descuentos automáticos.':'Client directory with matters. Origination and lead-partner splits. Per-category or flat rates per matter, with hour caps and automatic discounts.' },
         { icon: Shield, title: es?'Control de acceso':'Access control', desc: es?'Tres roles: admin, socio, asociado. El admin define qué módulos ve cada usuario. Los asociados solo ven sus propios datos.':'Three roles: admin, partner, associate. Admin defines module access per user. Associates see only their own data.' },
         { icon: Globe, title: es?'Español e inglés':'Spanish & English', desc: es?'Interfaz completamente bilingüe. Cada usuario elige su idioma. Listo para estudios con operaciones en Latinoamérica y Estados Unidos.':'Fully bilingual interface. Each user picks their language. Ready for firms with Latin American and US operations.' },
       ]
@@ -69,7 +69,7 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-semibold text-vexa-600 tracking-[3px]">vexa</span>
+          <a href="#top" className="text-xl font-semibold text-vexa-600 tracking-[3px] hover:tracking-[4px] transition-all">vexa</a>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.features}</a>
             <a href="#how" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.how}</a>
@@ -77,7 +77,7 @@ export default function LandingPage() {
             <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} className="text-sm text-gray-400 hover:text-gray-600">{lang === 'es' ? 'EN' : 'ES'}</button>
             <Link href="/login" className="px-4 py-2 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600">{L.nav.login}</Link>
           </div>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2"><Menu size={20} /></button>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2" aria-label={menuOpen ? 'Close menu' : 'Open menu'}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         </div>
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 space-y-3">
@@ -90,18 +90,31 @@ export default function LandingPage() {
         )}
       </nav>
 
-      {/* HERO */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900">
+      {/* HERO — brand-forward, Kinetic-Typography wordmark as the moment */}
+      <section className="relative pt-28 pb-24 px-6 overflow-hidden">
+        <div className="hero-aurora" aria-hidden="true" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <p className="text-[11px] uppercase tracking-[0.32em] text-vexa-600/70 dark:text-vexa-500/80 font-semibold mb-8">
+            {es ? 'Plataforma para estudios jurídicos' : 'Software for law firms'}
+          </p>
+
+          {/* Oversized brand wordmark — the focal point */}
+          <h1 className="wordmark-hero" aria-label="Vexa">vexa</h1>
+
+          <div className="wordmark-rule mt-8" />
+
+          {/* Tagline — supporting, not competing. Still a heading so SEO + a11y
+              treat it as a page-level title (h1 is the wordmark itself). */}
+          <h2 className="mt-8 text-2xl md:text-3xl font-medium tracking-tight text-gray-900 dark:text-slate-100 max-w-2xl mx-auto leading-[1.15]">
             {L.hero.title}
-          </h1>
-          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          </h2>
+          <p className="mt-5 text-base text-gray-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
             {L.hero.sub}
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#contact" className="px-8 py-3 bg-vexa-500 text-white rounded-lg text-sm font-medium hover:bg-vexa-600 transition-colors">{L.hero.cta}</a>
-            <a href="#features" className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">{L.hero.cta2}</a>
+
+          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors shadow-lg shadow-vexa-600/20">{L.hero.cta}</a>
+            <a href="#features" className="px-8 py-3.5 border border-gray-300 dark:border-white/15 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-white/60 dark:hover:bg-white/5 transition-colors backdrop-blur-sm">{L.hero.cta2}</a>
           </div>
         </div>
       </section>
