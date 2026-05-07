@@ -128,7 +128,7 @@ export default function ClientsPage(){
       rate_currency:matterForm.rate_currency,use_flat_rate:matterForm.use_flat_rate,
       flat_rate:matterForm.use_flat_rate&&matterForm.flat_rate?parseFloat(matterForm.flat_rate):null,
       hour_cap:matterForm.hour_cap?parseFloat(matterForm.hour_cap):null,
-      custom_rate:null,firm_id:firmId,lead_lawyer_id:null,matter_type:'general',
+      firm_id:firmId,
     }
     let matterId:string
     if(editingMatter){

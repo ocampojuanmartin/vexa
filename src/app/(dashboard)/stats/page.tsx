@@ -15,7 +15,7 @@ type MatterStat = {
   revenue:number; originators: { name:string; percentage:number }[]
 }
 type PartnerEfficiency = {
-  name:string; originated_revenue:number; originated_hours:number
+  user_id:string; name:string; originated_revenue:number; originated_hours:number
   avg_rate:number; efficiency_ratio:number; matter_count:number
 }
 
@@ -29,6 +29,7 @@ export default function StatsPage(){
   const[dateFrom,setDateFrom]=useState(()=>{const d=new Date();d.setDate(1);return d.toISOString().slice(0,10)})
   const[dateTo,setDateTo]=useState(()=>new Date().toISOString().slice(0,10))
   const[userRole,setUserRole]=useState('')
+  const[currentUserId,setCurrentUserId]=useState('')
   const[tab,setTab]=useState<'lawyers'|'matters'|'partners'>('lawyers')
 
   const loadStats=useCallback(async()=>{
@@ -39,8 +40,12 @@ export default function StatsPage(){
     const{data:p}=await sb.from('users').select('firm_id, role').eq('id',user.id).single()
     if(!p)return
     setUserRole(p.role)
+    setCurrentUserId(user.id)
 
-    const{data:users}=await sb.from('users').select('id, full_name, role, expected_monthly_hours').eq('is_active',true)
+    // Associates see only their own row; partners/admin see the whole firm.
+    let usersQ=sb.from('users').select('id, full_name, role, expected_monthly_hours').eq('is_active',true)
+    if(p.role==='associate')usersQ=usersQ.eq('id',user.id)
+    const{data:users}=await usersQ
     if(!users)return
 
     const{data:timeEntries}=await sb.from('time_entries').select('user_id, hours_logged, matter_id').gte('entry_date',dateFrom).lte('entry_date',dateTo)
@@ -83,18 +88,25 @@ export default function StatsPage(){
       }).filter(m=>m.hours_logged>0||m.revenue>0).sort((a,b)=>b.revenue-a.revenue)
       setMatterStats(mStats)
 
-      // Partner efficiency
-      const partnerMap:Record<string,{name:string;revenue:number;hours:number;count:number}>={}
+      // Partner efficiency — keyed by user_id so duplicate names don't collide.
+      const partnerMap:Record<string,{user_id:string;name:string;revenue:number;hours:number;count:number}>={}
+      const origByMatter:Record<string,{user_id:string;percentage:number}[]>={}
+      ;(originators||[]).forEach((o:any)=>{
+        if(!origByMatter[o.matter_id])origByMatter[o.matter_id]=[]
+        origByMatter[o.matter_id].push({user_id:o.user_id,percentage:o.percentage})
+      })
       mStats.forEach(m=>{
-        m.originators.forEach(o=>{
-          if(!partnerMap[o.name])partnerMap[o.name]={name:o.name,revenue:0,hours:0,count:0}
-          partnerMap[o.name].revenue+=m.revenue*(o.percentage/100)
-          partnerMap[o.name].hours+=m.hours_billed*(o.percentage/100)
-          partnerMap[o.name].count+=1
+        (origByMatter[m.matter_id]||[]).forEach(o=>{
+          const u=users.find(x=>x.id===o.user_id)
+          if(!u)return
+          if(!partnerMap[o.user_id])partnerMap[o.user_id]={user_id:o.user_id,name:u.full_name,revenue:0,hours:0,count:0}
+          partnerMap[o.user_id].revenue+=m.revenue*(o.percentage/100)
+          partnerMap[o.user_id].hours+=m.hours_billed*(o.percentage/100)
+          partnerMap[o.user_id].count+=1
         })
       })
       const pEff:PartnerEfficiency[]=Object.values(partnerMap).map(p=>({
-        name:p.name,originated_revenue:p.revenue,originated_hours:p.hours,
+        user_id:p.user_id,name:p.name,originated_revenue:p.revenue,originated_hours:p.hours,
         avg_rate:p.hours>0?p.revenue/p.hours:0,
         efficiency_ratio:p.hours>0?p.revenue/p.hours:0,
         matter_count:p.count,
@@ -108,7 +120,7 @@ export default function StatsPage(){
   useEffect(()=>{loadStats()},[loadStats])
 
   if(userRole==='associate'){
-    const me=userStats[0]
+    const me=userStats.find(u=>u.user_id===currentUserId)
     return(
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">{es?'Mis estadísticas':'My stats'}</h1>
@@ -261,7 +273,7 @@ export default function StatsPage(){
                   </tr></thead>
                   <tbody>
                     {partnerEff.map(p=>(
-                      <tr key={p.name} className="border-b border-gray-50">
+                      <tr key={p.user_id} className="border-b border-gray-50">
                         <td className="px-4 py-3 font-medium text-gray-900">{p.name}</td>
                         <td className="px-4 py-3 text-right text-gray-600">{p.matter_count}</td>
                         <td className="px-4 py-3 text-right font-medium text-gray-900">{p.originated_revenue.toLocaleString(undefined,{minimumFractionDigits:0})}</td>

@@ -7,7 +7,7 @@ import { Plus, Search, X, Receipt, Pencil, Lock, Paperclip, ExternalLink } from 
 
 type Expense = {
   id: string; expense_date: string; category: string; amount: number; currency: string
-  is_reimbursable: boolean; is_locked: boolean; matter_id: string; user_id: string; receipt_url: string|null
+  is_locked: boolean; matter_id: string; user_id: string; receipt_url: string|null
   matters?: any; users?: any
 }
 type Matter = { id: string; title: string; clients?: any }

@@ -3,10 +3,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/i18n/context'
-import { Plus, X, Pencil, GripVertical } from 'lucide-react'
+import { Plus, X, Pencil, Upload, Image as ImageIcon, Trash2 } from 'lucide-react'
 
 type Category = { id: string; name: string; default_rate: number; sort_order: number }
 type DemoRequest = { id: string; full_name: string; email: string; firm_name: string; firm_size: string; created_at: string }
+
+const MAX_LOGO_BYTES = 2 * 1024 * 1024 // 2 MB
+const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
 
 export default function SettingsPage() {
   const { locale } = useI18n()
@@ -16,6 +19,10 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [firmId, setFirmId] = useState('')
+  const [firmName, setFirmName] = useState('')
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [logoError, setLogoError] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Category|null>(null)
   const [formName, setFormName] = useState('')
@@ -30,6 +37,8 @@ export default function SettingsPage() {
     const { data: p } = await sb.from('users').select('firm_id, role').eq('id', user.id).single()
     if (!p) return
     setFirmId(p.firm_id); setIsAdmin(p.role === 'admin')
+    const { data: f } = await sb.from('firms').select('name, logo_url').eq('id', p.firm_id).single()
+    if (f) { setFirmName(f.name); setLogoUrl(f.logo_url) }
     const { data } = await sb.from('lawyer_categories').select('*').order('sort_order')
     if (data) setCategories(data)
     const { data: dr } = await sb.from('demo_requests').select('*').order('created_at', { ascending: false })
@@ -61,6 +70,52 @@ export default function SettingsPage() {
     loadData()
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // reset so re-uploading same filename works
+    if (!file) return
+    setLogoError('')
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      setLogoError(es ? 'Formato no soportado (PNG, JPG, WebP o SVG)' : 'Unsupported format (PNG, JPG, WebP or SVG)')
+      return
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      setLogoError(es ? 'Máx 2 MB' : 'Max 2 MB')
+      return
+    }
+    setLogoUploading(true)
+    const sb = createClient()
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+    const path = `${firmId}/logo-${Date.now()}.${ext}`
+    const { error: upErr } = await sb.storage.from('firm-logos').upload(path, file, {
+      upsert: true,
+      contentType: file.type,
+    })
+    if (upErr) { setLogoError(upErr.message); setLogoUploading(false); return }
+    const { data: urlData } = sb.storage.from('firm-logos').getPublicUrl(path)
+    const publicUrl = urlData.publicUrl
+    const { error: updErr } = await sb.from('firms').update({ logo_url: publicUrl }).eq('id', firmId)
+    if (updErr) { setLogoError(updErr.message); setLogoUploading(false); return }
+    setLogoUrl(publicUrl)
+    setLogoUploading(false)
+  }
+
+  async function handleLogoRemove() {
+    setLogoError('')
+    setLogoUploading(true)
+    const sb = createClient()
+    // Best-effort: remove stored objects under this firm's folder so we don't orphan them.
+    const { data: existing } = await sb.storage.from('firm-logos').list(firmId)
+    if (existing && existing.length > 0) {
+      const paths = existing.map(o => `${firmId}/${o.name}`)
+      await sb.storage.from('firm-logos').remove(paths)
+    }
+    const { error: updErr } = await sb.from('firms').update({ logo_url: null }).eq('id', firmId)
+    if (updErr) { setLogoError(updErr.message); setLogoUploading(false); return }
+    setLogoUrl(null)
+    setLogoUploading(false)
+  }
+
   if (!isAdmin) return <div className="text-center text-sm text-gray-500 mt-12">{es?'Sin acceso':'No access'}</div>
 
   const L = {
@@ -73,11 +128,58 @@ export default function SettingsPage() {
     noCategories: es?'No hay categorías definidas':'No categories defined',
   }
 
+  const LL = {
+    logoTitle: es ? 'Logo del estudio' : 'Firm logo',
+    logoDesc: es
+      ? 'Se usará en el encabezado de los timesheets en PDF. PNG, JPG, WebP o SVG, hasta 2 MB.'
+      : 'Used in the header of timesheet PDFs. PNG, JPG, WebP or SVG, up to 2 MB.',
+    logoUpload: es ? 'Subir logo' : 'Upload logo',
+    logoReplace: es ? 'Reemplazar' : 'Replace',
+    logoRemove: es ? 'Quitar logo' : 'Remove logo',
+    noLogo: es ? 'Sin logo subido' : 'No logo uploaded',
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-900">{L.title}</h1>
 
+      {/* FIRM LOGO */}
       <div className="mt-8">
+        <div>
+          <h2 className="text-lg font-medium text-gray-900">{LL.logoTitle}</h2>
+          <p className="text-sm text-gray-500 mt-1 max-w-xl">{LL.logoDesc}</p>
+        </div>
+        <div className="mt-4 bg-white rounded-xl border border-gray-200 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="w-28 h-28 rounded-lg border border-gray-200 bg-gray-50/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={firmName || 'Firm logo'} className="max-w-full max-h-full object-contain" />
+            ) : (
+              <ImageIcon size={32} className="text-gray-300" strokeWidth={1.25} />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900">{firmName || '—'}</p>
+            <p className="text-xs text-gray-500 mt-1 truncate">{logoUrl || LL.noLogo}</p>
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <label className={`inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 cursor-pointer hover:bg-gray-50 ${logoUploading?'opacity-50 pointer-events-none':''}`}>
+                <Upload size={14}/>{logoUrl ? LL.logoReplace : LL.logoUpload}
+                <input type="file" className="hidden" accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  onChange={handleLogoUpload} disabled={logoUploading}/>
+              </label>
+              {logoUrl && (
+                <button onClick={handleLogoRemove} disabled={logoUploading}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm text-red-600 hover:bg-red-50 disabled:opacity-50">
+                  <Trash2 size={14}/>{LL.logoRemove}
+                </button>
+              )}
+            </div>
+            {logoError && <p className="mt-3 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{logoError}</p>}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-medium text-gray-900">{L.catTitle}</h2>

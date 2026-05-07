@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   description: 'Practice management for law firms',
 }
 
+// Runs before React hydrates so the dark class is set on <html> on first paint.
+// No flash when reloading a page while dark mode is active.
+const themeInitScript = `(()=>{try{
+  var s=localStorage.getItem('vexa-theme');
+  var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if(d)document.documentElement.classList.add('dark');
+}catch(e){}})();`
+
 export default function RootLayout({
   children,
 }: {
@@ -14,7 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-gray-50 text-gray-900">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="text-gray-900">
         <I18nProvider>{children}</I18nProvider>
       </body>
     </html>

@@ -5,12 +5,12 @@ import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/i18n/context'
 import { Plus, X, Pencil, UserCog, Shield, ShieldCheck, User } from 'lucide-react'
 
-type UserRecord = { id:string; email:string; full_name:string; role:string; hourly_rate:number; expected_monthly_hours:number; module_permissions:Record<string,boolean>; is_active:boolean; category_id:string|null }
+type UserRecord = { id:string; email:string; full_name:string; role:string; expected_monthly_hours:number; module_permissions:Record<string,boolean>; is_active:boolean; category_id:string|null }
 type Category = { id:string; name:string; default_rate:number }
 type Form = { full_name:string; email:string; password:string; role:string; expected_monthly_hours:string; modules:Record<string,boolean>; category_id:string }
 
-const MODULES = ['clients','matters','time','expenses','timesheets','stats']
-const defaultModules = { clients:true, matters:true, time:true, expenses:true, timesheets:false, stats:false }
+const MODULES = ['clients','time','expenses','timesheets','stats']
+const defaultModules = { clients:true, time:true, expenses:true, timesheets:false, stats:false }
 const emptyForm = (): Form => ({ full_name:'', email:'', password:'', role:'associate', expected_monthly_hours:'160', modules:{...defaultModules}, category_id:'' })
 
 export default function UsersPage() {
@@ -57,9 +57,9 @@ export default function UsersPage() {
     setSaving(true); setError('')
     const sb = createClient()
     if (editing) {
-      await sb.from('users').update({ full_name:form.full_name.trim(), role:form.role as any, hourly_rate:0, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }).eq('id', editing.id)
+      await sb.from('users').update({ full_name:form.full_name.trim(), role:form.role as any, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }).eq('id', editing.id)
     } else {
-      const res = await fetch('/api/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:form.email.trim(), password:form.password, full_name:form.full_name.trim(), role:form.role, hourly_rate:0, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }) })
+      const res = await fetch('/api/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:form.email.trim(), password:form.password, full_name:form.full_name.trim(), role:form.role, expected_monthly_hours:parseInt(form.expected_monthly_hours)||160, module_permissions:form.modules, category_id:form.category_id||null }) })
       const result = await res.json()
       if (!res.ok) { setError(result.error||'Error'); setSaving(false); return }
     }
@@ -70,7 +70,7 @@ export default function UsersPage() {
 
   const roleIcon = (r:string) => r==='admin'?<ShieldCheck size={14} className="text-vexa-600"/>:r==='partner'?<Shield size={14} className="text-purple-600"/>:<User size={14} className="text-gray-400"/>
   const roleLabel = (r:string) => (es?{admin:'Administrador',partner:'Socio',associate:'Asociado'}:{admin:'Admin',partner:'Partner',associate:'Associate'})[r]||r
-  const modLabel = (m:string) => (es?{clients:'Clientes',matters:'Asuntos',time:'Horas',expenses:'Gastos',timesheets:'Timesheets',stats:'Estadísticas'}:{clients:'Clients',matters:'Matters',time:'Time',expenses:'Expenses',timesheets:'Timesheets',stats:'Stats'})[m]||m
+  const modLabel = (m:string) => (es?{clients:'Clientes & Asuntos',time:'Horas',expenses:'Gastos',timesheets:'Timesheets',stats:'Estadísticas'}:{clients:'Clients & Matters',time:'Time',expenses:'Expenses',timesheets:'Timesheets',stats:'Stats'})[m]||m
   const catName = (id:string|null) => categories.find(c=>c.id===id)?.name || '—'
 
   if (!isAdmin) return <div className="text-center text-sm text-gray-500 mt-12">{es?'Sin acceso':'No access'}</div>
