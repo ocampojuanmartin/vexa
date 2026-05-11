@@ -1,33 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Clock, FileText, BarChart3, Users, Shield, Globe, Check, Menu, X } from 'lucide-react'
-
-// Scroll-triggered reveal — fires once when the element first enters the viewport.
-// Honours prefers-reduced-motion (renders visible immediately).
-function useReveal(threshold = 0.18) {
-  const ref = useRef<HTMLDivElement | null>(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setVisible(true); return
-    }
-    const el = ref.current
-    if (!el || !('IntersectionObserver' in window)) { setVisible(true); return }
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) { setVisible(true); io.unobserve(el) }
-      }),
-      { threshold, rootMargin: '0px 0px -10% 0px' }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [threshold])
-  return { ref, visible }
-}
 
 export default function LandingPage() {
   const [lang, setLang] = useState<'es'|'en'>('en')
@@ -45,7 +21,7 @@ export default function LandingPage() {
   const es = lang === 'es'
 
   const L = {
-    nav: { showcase: es?'Vexa en uso':'In action', features: es?'Funcionalidades':'Features', how: es?'Cómo funciona':'How it works', contact: es?'Contacto':'Contact', login: es?'Ingresar':'Sign in' },
+    nav: { features: es?'Funcionalidades':'Features', how: es?'Cómo funciona':'How it works', contact: es?'Contacto':'Contact', login: es?'Ingresar':'Sign in' },
     hero: {
       title: es ? 'De las horas al cobro, sin planillas' : 'From hours to collection, no spreadsheets',
       sub: es ? 'Vexa es la plataforma que reemplaza las planillas de Excel y el control manual de horas por un sistema simple, claro y profesional.' : 'Vexa replaces Excel spreadsheets and manual hour tracking with a simple, clear, and professional system.',
@@ -73,45 +49,6 @@ export default function LandingPage() {
         { n: '4', title: es?'Se registra el cobro':'Payment is recorded', desc: es?'El socio avanza el estado: aprobado → factura emitida → pagado. Las estadísticas se actualizan en tiempo real.':'Partners advance status: approved → invoice issued → paid. Stats update in real time.' },
       ]
     },
-    showcase: {
-      eyebrow: es ? 'Vexa en uso' : 'Vexa in action',
-      title: es ? 'Tres pantallas, un flujo completo' : 'Three screens, one complete flow',
-      sub: es
-        ? 'Cargás horas, generás el timesheet, medís el resultado. Sin planillas.'
-        : 'Log hours, generate the timesheet, measure the outcome. No spreadsheets.',
-      items: [
-        {
-          n: '01',
-          src: '/screenshots/01-time.png',
-          fallback: '/screenshots/01-time.svg',
-          url: 'vexasolutions.app / time',
-          caption: es ? 'Carga de horas' : 'Time tracking',
-          desc: es
-            ? 'Calendario por día, hora y minuto. Cada abogado carga; el socio revisa.'
-            : 'Daily calendar, hours + minutes. Associates log, partners review.',
-        },
-        {
-          n: '02',
-          src: '/screenshots/02-timesheet.png',
-          fallback: '/screenshots/02-timesheet.svg',
-          url: 'vexasolutions.app / timesheets',
-          caption: es ? 'Timesheet del cliente' : 'Client timesheet',
-          desc: es
-            ? 'Detalle por abogado, tarifa por categoría, descuentos y honorarios de éxito. PDF con tu logo.'
-            : 'Per-lawyer detail, category rates, discounts, success fees. PDF with your firm logo.',
-        },
-        {
-          n: '03',
-          src: '/screenshots/03-stats.png',
-          fallback: '/screenshots/03-stats.svg',
-          url: 'vexasolutions.app / stats',
-          caption: es ? 'Estadísticas del estudio' : 'Firm statistics',
-          desc: es
-            ? 'Ingresos por abogado, ratio facturable, tasa de cobro, originación. Filtrable por período.'
-            : 'Revenue per lawyer, billable ratio, collection rate, origination splits. Filter by period.',
-        },
-      ],
-    },
     cta: {
       title: es ? 'Empezá a usar Vexa hoy' : 'Start using Vexa today',
       sub: es ? 'Solicitá una demo personalizada para tu estudio. Sin compromiso.' : 'Request a personalized demo for your firm. No commitment.',
@@ -134,7 +71,6 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="#top" className="text-xl font-semibold text-vexa-600 tracking-[3px] hover:tracking-[4px] transition-all">vexa</a>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#showcase" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.showcase}</a>
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.features}</a>
             <a href="#how" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.how}</a>
             <a href="#contact" className="text-sm text-gray-600 hover:text-gray-900">{L.nav.contact}</a>
@@ -145,7 +81,6 @@ export default function LandingPage() {
         </div>
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 space-y-3">
-            <a href="#showcase" onClick={() => setMenuOpen(false)} className="block text-sm text-gray-600">{L.nav.showcase}</a>
             <a href="#features" onClick={() => setMenuOpen(false)} className="block text-sm text-gray-600">{L.nav.features}</a>
             <a href="#how" onClick={() => setMenuOpen(false)} className="block text-sm text-gray-600">{L.nav.how}</a>
             <a href="#contact" onClick={() => setMenuOpen(false)} className="block text-sm text-gray-600">{L.nav.contact}</a>
@@ -180,29 +115,6 @@ export default function LandingPage() {
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 transition-colors">{L.hero.cta}</a>
             <a href="#features" className="px-8 py-3.5 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">{L.hero.cta2}</a>
-          </div>
-        </div>
-      </section>
-
-      {/* SHOWCASE — scroll-triggered, browser-chrome framed screenshots */}
-      <section id="showcase" className="py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-[11px] uppercase tracking-[0.28em] text-vexa-600/70 font-semibold mb-4">
-              {L.showcase.eyebrow}
-            </p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
-              {L.showcase.title}
-            </h2>
-            <p className="mt-5 text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
-              {L.showcase.sub}
-            </p>
-          </div>
-
-          <div className="space-y-16 sm:space-y-24">
-            {L.showcase.items.map((item, i) => (
-              <ShowcaseRow key={item.n} item={item} flipped={i % 2 === 1} />
-            ))}
           </div>
         </div>
       </section>
@@ -306,58 +218,3 @@ export default function LandingPage() {
   )
 }
 
-// Single screenshot row — eyebrow + caption on one side, framed screenshot on the
-// other. Fades in + lifts when scrolled into view (IntersectionObserver). Image
-// falls back to the bundled SVG placeholder if the PNG file isn't there yet.
-interface ShowcaseItem {
-  n: string
-  src: string
-  fallback: string
-  url: string
-  caption: string
-  desc: string
-}
-function ShowcaseRow({ item, flipped }: { item: ShowcaseItem; flipped: boolean }) {
-  const { ref, visible } = useReveal()
-  return (
-    <div
-      ref={ref}
-      className={`grid lg:grid-cols-12 gap-8 lg:gap-12 items-center transition-all duration-700 ease-out ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-      }`}
-    >
-      {/* Caption column */}
-      <div className={`lg:col-span-3 ${flipped ? 'lg:order-2' : ''}`}>
-        <div className="font-semibold text-5xl tracking-tight text-vexa-600/30 tabular-nums leading-none">{item.n}</div>
-        <h3 className="mt-4 text-2xl md:text-3xl font-bold tracking-tight text-gray-900">{item.caption}</h3>
-        <p className="mt-3 text-base text-gray-500 leading-relaxed">{item.desc}</p>
-      </div>
-
-      {/* Screenshot frame */}
-      <div className={`lg:col-span-9 ${flipped ? 'lg:order-1' : ''}`}>
-        <div className="rounded-lg overflow-hidden bg-white border border-gray-200">
-          {/* Browser chrome */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-300/70" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-300/70" />
-            <span className="w-2.5 h-2.5 rounded-full bg-green-300/70" />
-            <span className="ml-3 text-[11px] text-gray-400 font-mono tracking-tight truncate">{item.url}</span>
-          </div>
-          {/* Screenshot */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={item.src}
-            alt={item.caption}
-            loading="lazy"
-            decoding="async"
-            className="block w-full h-auto"
-            onError={(e) => {
-              const img = e.currentTarget
-              if (img.src.endsWith('.png')) img.src = item.fallback
-            }}
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
