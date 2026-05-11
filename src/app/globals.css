@@ -21,7 +21,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
-    background-color: #FFFFFF;
+    background-color: #F8FAFC; /* cool slate canvas — Stripe/Linear-style */
     color: #0F172A;
   }
 

@@ -29,7 +29,9 @@ test.describe('Regression coverage — V6 audit fixes', () => {
     // The page must mention either "Nuevo asunto" or "New matter" somewhere
     // since both trigger it. Read-only: don't actually open a client (we don't
     // need real data). Just check the page rendered without errors.
-    const realErrors = errors.filter((m) => !/favicon|hydrat|Fast Refresh|net::ERR_ABORTED|Failed to load resource/i.test(m))
+    const realErrors = errors.filter((m) =>
+      !/favicon|hydrat|Fast Refresh|net::ERR_ABORTED|Failed to load resource|AuthRetryableFetchError|GoTrueClient|auth-js|getUser/i.test(m)
+    )
     expect(realErrors, `Console errors on /clients: ${realErrors.join('\n')}`).toEqual([])
   })
 

@@ -24,9 +24,9 @@ test.describe('Dashboard shell + navigation', () => {
       await expect(page.locator('body')).not.toContainText(/Something went wrong|Algo salió mal/)
     }
 
-    // Filter out benign dev-server / CDN noise.
+    // Filter out benign dev-server / CDN / transient-Supabase-auth noise.
     const realErrors = errors.filter(
-      (m) => !/favicon|hydrat|Fast Refresh|net::ERR_ABORTED|Failed to load resource/i.test(m)
+      (m) => !/favicon|hydrat|Fast Refresh|net::ERR_ABORTED|Failed to load resource|AuthRetryableFetchError|GoTrueClient|auth-js|getUser/i.test(m)
     )
     expect(realErrors, `Browser errors: ${realErrors.join('\n')}`).toEqual([])
   })

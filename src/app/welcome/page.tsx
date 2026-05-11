@@ -208,7 +208,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" className="py-20 px-6 bg-gray-50">
+      <section id="features" className="py-20 px-6 bg-white border-y border-gray-200">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold">{L.features.title}</h2>
@@ -250,7 +250,7 @@ export default function LandingPage() {
       </section>
 
       {/* CONTACT / DEMO FORM */}
-      <section id="contact" className="py-20 px-6 bg-gray-50">
+      <section id="contact" className="py-20 px-6 bg-white border-t border-gray-200">
         <div className="max-w-lg mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold">{L.cta.title}</h2>
