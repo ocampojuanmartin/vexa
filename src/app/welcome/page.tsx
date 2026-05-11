@@ -186,7 +186,7 @@ export default function LandingPage() {
 
       {/* SHOWCASE — scroll-triggered, browser-chrome framed screenshots */}
       <section id="showcase" className="py-24 px-6 relative">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <p className="text-[11px] uppercase tracking-[0.28em] text-vexa-600/70 font-semibold mb-4">
               {L.showcase.eyebrow}
@@ -327,14 +327,14 @@ function ShowcaseRow({ item, flipped }: { item: ShowcaseItem; flipped: boolean }
       }`}
     >
       {/* Caption column */}
-      <div className={`lg:col-span-4 ${flipped ? 'lg:order-2' : ''}`}>
+      <div className={`lg:col-span-3 ${flipped ? 'lg:order-2' : ''}`}>
         <div className="font-semibold text-5xl tracking-tight text-vexa-600/30 tabular-nums leading-none">{item.n}</div>
         <h3 className="mt-4 text-2xl md:text-3xl font-bold tracking-tight text-gray-900">{item.caption}</h3>
         <p className="mt-3 text-base text-gray-500 leading-relaxed">{item.desc}</p>
       </div>
 
       {/* Screenshot frame */}
-      <div className={`lg:col-span-8 ${flipped ? 'lg:order-1' : ''}`}>
+      <div className={`lg:col-span-9 ${flipped ? 'lg:order-1' : ''}`}>
         <div className="rounded-lg overflow-hidden bg-white border border-gray-200">
           {/* Browser chrome */}
           <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
