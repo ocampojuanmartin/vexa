@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F1EEF8"/>
+      <stop offset="0.5" stop-color="#EBE8F3"/>
+      <stop offset="1" stop-color="#EDE4EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="240" height="1000" fill="white" fill-opacity="0.4"/>
+  <text x="40" y="60" font-family="ui-sans-serif" font-size="22" font-weight="600" fill="#1A365D" letter-spacing="3">vexa</text>
+  <rect x="20" y="140" width="200" height="36" rx="8" fill="white" fill-opacity="0.6"/>
+  <rect x="40" y="200" width="160" height="14" rx="3" fill="#cbd5e1" opacity="0.6"/>
+  <rect x="40" y="240" width="120" height="14" rx="3" fill="#cbd5e1" opacity="0.6"/>
+  <rect x="40" y="280" width="140" height="14" rx="3" fill="#cbd5e1" opacity="0.6"/>
+  <rect x="40" y="320" width="160" height="14" rx="3" fill="#cbd5e1" opacity="0.6"/>
+  <!-- Main: title -->
+  <text x="300" y="100" font-family="ui-sans-serif" font-size="36" font-weight="700" fill="#1A365D">Horas</text>
+  <!-- Calendar grid -->
+  <g transform="translate(300, 160)">
+    <rect width="500" height="380" rx="14" fill="white" fill-opacity="0.7"/>
+    <text x="20" y="40" font-family="ui-sans-serif" font-size="14" fill="#64748b">Abril 2026</text>
+    <g font-family="ui-sans-serif" font-size="12" fill="#94a3b8">
+      <text x="40" y="80">L</text><text x="105" y="80">M</text><text x="170" y="80">M</text>
+      <text x="235" y="80">J</text><text x="300" y="80">V</text><text x="365" y="80">S</text><text x="430" y="80">D</text>
+    </g>
+    <g fill="#1A365D" font-family="ui-sans-serif" font-size="13">
+      <!-- Rows of dates -->
+      <g transform="translate(20, 100)">
+        <g transform="translate(0,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">1</text></g>
+        <g transform="translate(65,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">2</text></g>
+        <g transform="translate(130,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">3</text></g>
+        <g transform="translate(195,0)"><rect width="60" height="44" rx="6" fill="#3182CE" fill-opacity="0.18"/><text x="10" y="20" fill="#1A365D">8</text><circle cx="40" cy="32" r="3" fill="#3182CE"/></g>
+        <g transform="translate(260,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">9</text></g>
+        <g transform="translate(325,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">10</text></g>
+        <g transform="translate(390,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">11</text></g>
+      </g>
+      <g transform="translate(20, 160)">
+        <g transform="translate(0,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">12</text></g>
+        <g transform="translate(65,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">13</text></g>
+        <g transform="translate(130,0)"><rect width="60" height="44" rx="6" fill="#3182CE" fill-opacity="0.6"/><text x="10" y="20" fill="white">14</text></g>
+        <g transform="translate(195,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">15</text></g>
+        <g transform="translate(260,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">16</text></g>
+        <g transform="translate(325,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">17</text></g>
+        <g transform="translate(390,0)"><rect width="60" height="44" rx="6" fill="white" fill-opacity="0.6"/><text x="10" y="20">18</text></g>
+      </g>
+    </g>
+  </g>
+  <!-- Right column: entries -->
+  <g transform="translate(840, 160)">
+    <rect width="700" height="600" rx="14" fill="white" fill-opacity="0.7"/>
+    <text x="24" y="40" font-family="ui-sans-serif" font-size="16" font-weight="600" fill="#1A365D">Entradas del día</text>
+    <g transform="translate(24, 70)">
+      <rect width="652" height="60" rx="8" fill="white" fill-opacity="0.6"/>
+      <text x="16" y="24" font-family="ui-sans-serif" font-size="13" font-weight="600" fill="#1A365D">Cliente ABC — Memo MX</text>
+      <text x="16" y="44" font-family="ui-sans-serif" font-size="11" fill="#64748b">3h 30m · Análisis cláusula 4.2</text>
+      <rect x="600" y="20" width="40" height="20" rx="4" fill="#3182CE" fill-opacity="0.15"/>
+    </g>
+    <g transform="translate(24, 144)">
+      <rect width="652" height="60" rx="8" fill="white" fill-opacity="0.6"/>
+      <text x="16" y="24" font-family="ui-sans-serif" font-size="13" font-weight="600" fill="#1A365D">Estudio Demo — Revisión contrato</text>
+      <text x="16" y="44" font-family="ui-sans-serif" font-size="11" fill="#64748b">1h 45m · Reunión + minuta</text>
+    </g>
+    <g transform="translate(24, 218)">
+      <rect width="652" height="60" rx="8" fill="white" fill-opacity="0.6"/>
+      <text x="16" y="24" font-family="ui-sans-serif" font-size="13" font-weight="600" fill="#1A365D">Caso 12-2026</text>
+      <text x="16" y="44" font-family="ui-sans-serif" font-size="11" fill="#64748b">2h 00m · Investigación de antecedentes</text>
+    </g>
+    <text x="24" y="340" font-family="ui-sans-serif" font-size="12" fill="#94a3b8" letter-spacing="2">PLACEHOLDER — replace at public/screenshots/01-time.png</text>
+  </g>
+</svg>

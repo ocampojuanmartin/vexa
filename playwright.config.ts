@@ -13,6 +13,7 @@ export default defineConfig({
   expect: { timeout: 5_000 },
   fullyParallel: false,
   workers: 1,
+  retries: 1, // tolerate transient Supabase auth-refresh races on cold DB pages
   reporter: [['list']],
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
