@@ -157,7 +157,7 @@ export default function LandingPage() {
 
       {/* HERO — brand-forward, Kinetic-Typography wordmark as the moment */}
       <section className="relative pt-28 pb-24 px-6 overflow-hidden">
-        <div className="hero-aurora" aria-hidden="true" />
+        {/* No backdrop — Big-law minimal lets the wordmark stand on white. */}
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <p className="text-[11px] uppercase tracking-[0.32em] text-vexa-600/70 dark:text-vexa-500/80 font-semibold mb-8">
             {es ? 'Plataforma para estudios jurídicos' : 'Software for law firms'}
@@ -178,8 +178,8 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-lg text-sm font-medium hover:bg-vexa-700 transition-colors shadow-lg shadow-vexa-600/20">{L.hero.cta}</a>
-            <a href="#features" className="px-8 py-3.5 border border-gray-300 dark:border-white/15 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-white/60 dark:hover:bg-white/5 transition-colors backdrop-blur-sm">{L.hero.cta2}</a>
+            <a href="#contact" className="px-8 py-3.5 bg-vexa-600 text-white rounded-md text-sm font-medium hover:bg-vexa-700 transition-colors">{L.hero.cta}</a>
+            <a href="#features" className="px-8 py-3.5 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">{L.hero.cta2}</a>
           </div>
         </div>
       </section>
@@ -335,9 +335,9 @@ function ShowcaseRow({ item, flipped }: { item: ShowcaseItem; flipped: boolean }
 
       {/* Screenshot frame */}
       <div className={`lg:col-span-8 ${flipped ? 'lg:order-1' : ''}`}>
-        <div className="rounded-2xl overflow-hidden bg-white/60 backdrop-blur-md border border-white/70 shadow-[0_24px_56px_-24px_rgba(15,23,42,0.18)]">
+        <div className="rounded-lg overflow-hidden bg-white border border-gray-200">
           {/* Browser chrome */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-white/40 border-b border-white/60">
+          <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
             <span className="w-2.5 h-2.5 rounded-full bg-red-300/70" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-300/70" />
             <span className="w-2.5 h-2.5 rounded-full bg-green-300/70" />
